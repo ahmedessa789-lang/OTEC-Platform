@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>OTEC Manufacturing Platform V5.4 True Mobile Layout</title>
+<title>OTEC Manufacturing Platform V5.8 Mobile Menu Auto Close</title>
 <style>
 :root{--p:#123f6d;--p2:#1f6fa8;--bg:#f4f7fb;--card:#fff;--txt:#1d2735;--mut:#6d7885;--bd:#dce4ec;--ok:#198754;--warn:#c27a00;--bad:#b53a30}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--txt)}
@@ -20,7 +20,9 @@ input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--bd);bo
 .modal{position:fixed;inset:0;background:#061423aa;display:grid;place-items:center;padding:20px;z-index:99}.modalbox{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:17px;padding:20px}.modalhead{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#edf2f7;width:34px;height:34px;border-radius:9px;cursor:pointer}.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.bar{height:9px;background:#e7edf2;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;background:var(--p)}
 .menu{display:none}.choice{display:flex;gap:10px;flex-wrap:wrap}.choice label{flex:1;min-width:180px;border:1px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer}.choice input{width:auto;margin-inline-end:8px}.upload-list{display:grid;gap:8px;margin-top:10px}.upload-item{display:flex;justify-content:space-between;gap:10px;padding:9px 11px;border:1px solid var(--bd);border-radius:9px;background:#f8fafc}.statusbox{padding:14px;border-radius:12px;background:#fff8e7;border:1px solid #f0d794}.login-actions{display:grid;gap:9px;margin-top:10px}
 @media(max-width:980px){.g4{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}.loginbox{grid-template-columns:1fr}.hero{display:none}}
-@media(max-width:720px){.app{grid-template-columns:1fr}.side{position:fixed;left:-275px;width:260px;z-index:30;transition:.25s}.side.open{left:0}.menu{display:block}.g4,.g3,.g2,.fg{grid-template-columns:1fr}.content{padding:15px}.head{align-items:flex-start;flex-direction:column}.form{padding:28px}}
+@media(max-width:720px){.app{grid-template-columns:1fr}.side{position:fixed;left:-275px;width:min(82vw,300px);z-index:40;transition:left .25s ease;box-shadow:18px 0 45px rgba(0,0,0,.22)}.side.open{left:0}.menu{display:block}.g4,.g3,.g2,.fg{grid-template-columns:1fr}.content{padding:15px}.head{align-items:flex-start;flex-direction:column}.form{padding:28px}.side-backdrop{display:block;position:fixed;inset:0;background:rgba(5,20,35,.42);backdrop-filter:blur(2px);z-index:35;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}.side-backdrop.show{opacity:1;visibility:visible}body.menu-open{overflow:hidden}.side .nav button{min-height:48px;font-size:16px}.side-close{display:grid!important}}
+
+.side-backdrop{display:none}.side-close{display:none!important}
 [dir="rtl"] .nav button,[dir="rtl"] th,[dir="rtl"] td{text-align:right}
 
 .registration{min-height:100vh;background:linear-gradient(135deg,#071f36,#123f6d 60%,#1f6fa8);padding:24px;display:grid;place-items:center}.reg-wrap{width:min(1120px,100%);min-height:690px;background:#fff;border-radius:26px;overflow:hidden;display:grid;grid-template-columns:330px 1fr;box-shadow:0 35px 85px #0005}.reg-left{padding:34px;background:linear-gradient(160deg,#0c365d,#071f36);color:#fff}.reg-left h2{font-size:34px;margin:58px 0 15px}.reg-left p{color:#d5e3ee;line-height:1.7}.reg-point{display:flex;gap:10px;margin:20px 0}.reg-point i{font-style:normal;width:28px;height:28px;border-radius:9px;background:#e7aa2c;color:#102840;display:grid;place-items:center;font-weight:900;flex:none}.reg-main{padding:32px 40px}.reg-head{display:flex;justify-content:space-between;align-items:flex-start}.reg-head h1{margin:0}.reg-head p{margin:6px 0;color:var(--mut)}.wizard-steps{display:grid;grid-template-columns:repeat(4,1fr);margin:28px 0}.wstep{text-align:center;color:#8793a2;font-size:12px;font-weight:800;position:relative}.wstep:not(:last-child):after{content:"";position:absolute;top:17px;left:57%;right:-43%;height:3px;background:#e4e9ef}.wstep b{width:36px;height:36px;border-radius:50%;background:#eef2f6;display:grid;place-items:center;margin:0 auto 8px;position:relative;z-index:2}.wstep.active,.wstep.done{color:var(--p)}.wstep.active b,.wstep.done b{background:var(--p);color:#fff;box-shadow:0 0 0 4px #dceaf5}.wstep.done:not(:last-child):after{background:var(--p)}.wizard-card{border:1px solid var(--bd);border-radius:18px;padding:24px;box-shadow:0 12px 30px #123f6d0d}.wizard-pane{display:none}.wizard-pane.active{display:block}.pane-title{display:flex;gap:13px;align-items:center;margin-bottom:20px}.pane-icon{width:50px;height:50px;border-radius:15px;background:#eaf2f8;display:grid;place-items:center;font-size:24px}.pane-title h3{margin:0}.pane-title p{margin:5px 0 0;color:var(--mut)}.req:after{content:" *";color:var(--bad)}.drop-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.drop-card{border:2px dashed #b9c8d6;border-radius:17px;background:#f8fbfd;padding:30px 15px;text-align:center;cursor:pointer}.drop-card:hover{border-color:var(--p2)}.drop-card strong{display:block;margin:8px}.file-name{color:var(--ok);font-size:13px;font-weight:800;margin-top:8px;word-break:break-word}.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.review-box{background:#f8fafc;border:1px solid var(--bd);border-radius:13px;padding:14px}.review-box h4{margin:0 0 10px}.rline{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #e8edf2;font-size:13px}.rline:last-child{border:0}.rline span{color:var(--mut)}.wizard-actions{display:flex;justify-content:space-between;margin-top:18px}.wizard-actions>div{display:flex;gap:8px}.success-view{text-align:center;padding:36px 10px}.success-view .check{width:82px;height:82px;border-radius:50%;background:#dff5e7;color:var(--ok);display:grid;place-items:center;font-size:40px;margin:auto}.pending-note{background:#fff8e7;border:1px solid #efd28b;border-radius:13px;padding:14px;margin:18px auto;max-width:530px;color:#785200}@media(max-width:850px){.reg-wrap{grid-template-columns:1fr}.reg-left{display:none}.reg-main{padding:22px}}@media(max-width:620px){.registration{padding:10px}.reg-main{padding:17px}.drop-grid,.review-grid,.fg{grid-template-columns:1fr}.wizard-card{padding:17px}.wstep{font-size:10px}.wstep b{width:31px;height:31px}.wstep:not(:last-child):after{top:14px}.wizard-actions{flex-direction:column-reverse;gap:9px}.wizard-actions>div{display:grid}.wizard-actions button{width:100%}}
@@ -169,8 +171,9 @@ main,.main,.content,.app>div{min-width:0}
 
 
 
-/* V5.5 — Mobile tables use horizontal scrolling with a visible control slider */
+/* V5.7 — Polished mobile tables: swipe naturally with a compact navigator */
 @media(max-width:720px){
+  html,body{max-width:100%;overflow-x:hidden!important}
   .table{
     display:block!important;
     width:100%!important;
@@ -179,69 +182,58 @@ main,.main,.content,.app>div{min-width:0}
     overflow-y:hidden!important;
     -webkit-overflow-scrolling:touch;
     touch-action:pan-x pan-y;
-    padding:0 0 8px!important;
+    padding:0 0 6px!important;
     margin:0!important;
-    scrollbar-width:thin;
-    scrollbar-color:#174c7c #dfe8ef;
+    scrollbar-width:none;
+    scroll-behavior:smooth;
+    border-radius:16px;
   }
-  .table::-webkit-scrollbar{height:10px}
-  .table::-webkit-scrollbar-track{background:#dfe8ef;border-radius:999px}
-  .table::-webkit-scrollbar-thumb{background:#174c7c;border-radius:999px;border:2px solid #dfe8ef}
-
+  .table::-webkit-scrollbar{display:none}
   .table table,.summary-table{
     display:table!important;
     width:max-content!important;
-    min-width:760px!important;
+    min-width:720px!important;
     border-collapse:collapse!important;
   }
   .table thead,.summary-table thead{display:table-header-group!important}
   .table tbody,.summary-table tbody{display:table-row-group!important}
-  .table tr,.summary-table tr{
-    display:table-row!important;
-    width:auto!important;
-    background:transparent!important;
-    border:0!important;
-    border-radius:0!important;
-    padding:0!important;
-    box-shadow:none!important;
-  }
+  .table tr,.summary-table tr{display:table-row!important;width:auto!important;background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}
   .table th,.table td,.summary-table th,.summary-table td{
-    display:table-cell!important;
-    width:auto!important;
-    min-width:120px;
-    padding:12px!important;
-    border-bottom:1px solid var(--bd)!important;
-    text-align:left!important;
-    white-space:normal!important;
-    vertical-align:middle!important;
-    font-size:13px!important;
+    display:table-cell!important;width:auto!important;min-width:118px;padding:12px!important;
+    border-bottom:1px solid var(--bd)!important;text-align:left!important;white-space:normal!important;
+    vertical-align:middle!important;font-size:13px!important
   }
-  .table th:first-child,.table td:first-child{position:sticky;left:0;z-index:2;background:#fff;min-width:145px}
+  .table th:first-child,.table td:first-child{position:sticky;left:0;z-index:2;background:#fff;min-width:138px;box-shadow:8px 0 14px -14px rgba(15,38,58,.55)}
   .table th:first-child{z-index:3;background:#f8fafc}
   .table td::before,.summary-table td::before{content:none!important;display:none!important}
   .table td>*,.summary-table td>*{max-width:none!important}
 
-  .mobile-scroll-control{
-    display:flex;
-    align-items:center;
-    gap:9px;
-    margin:10px 2px 2px;
-    padding:9px 11px;
-    border:1px solid var(--bd);
-    border-radius:12px;
-    background:#f6f9fb;
+  .table-navigator{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    width:max-content;max-width:100%;margin:9px auto 2px;padding:6px 8px;
+    border:1px solid rgba(23,76,124,.14);border-radius:999px;
+    background:rgba(255,255,255,.94);box-shadow:0 8px 22px rgba(18,52,77,.08);
+    backdrop-filter:blur(8px)
   }
-  .mobile-scroll-control span{font-size:12px;font-weight:800;color:#536171;white-space:nowrap}
-  .mobile-scroll-range{
-    width:100%;
-    min-width:0;
-    accent-color:#174c7c;
-    height:28px;
-    margin:0;
+  .table-navigator.is-hidden{display:none!important}
+  .table-nav-btn{
+    width:32px;height:32px;border:0;border-radius:50%;display:grid;place-items:center;
+    background:#edf4f9;color:#174c7c;font-size:20px;font-weight:900;line-height:1;cursor:pointer
   }
-  .mobile-scroll-control.is-hidden{display:none!important}
+  .table-nav-btn:disabled{opacity:.28;cursor:default}
+  .table-nav-track{position:relative;width:min(38vw,150px);height:5px;border-radius:999px;background:#dfe8ef;overflow:hidden}
+  .table-nav-progress{position:absolute;inset:0 auto 0 0;width:28%;border-radius:999px;background:#174c7c;transform:translateX(0)}
 }
-@media(min-width:721px){.mobile-scroll-control{display:none!important}}
+@media(min-width:721px){.table-navigator{display:none!important}}
+
+/* V5.9 — Ensure hidden screens stay fully hidden on mobile */
+.login.hide,.registration.hide,.app.hide,.modal.hide{display:none!important}
+@media(max-width:720px){
+  .app.hide{display:none!important}
+  body:not(.menu-open) .side{transform:translateX(-105%)!important}
+  [dir="rtl"] body:not(.menu-open) .side{transform:translateX(105%)!important}
+}
+
 </style>
 </head>
 <body>
@@ -265,14 +257,15 @@ main,.main,.content,.app>div{min-width:0}
 </section>
 
 <section id="registration" class="registration hide"><div class="reg-wrap"><aside class="reg-left"><div class="logo"><div class="mark">O</div>OTEC</div><h2>Create your company workspace</h2><p>Complete your profile and company verification through a secure onboarding experience.</p><div class="reg-point"><i>✓</i><div><b>Personal account</b><br><small>Secure sign-in for the responsible user.</small></div></div><div class="reg-point"><i>✓</i><div><b>Company verification</b><br><small>Commercial register and tax card review.</small></div></div><div class="reg-point"><i>✓</i><div><b>Ready for orders</b><br><small>Submit drawings after approval.</small></div></div></aside><main class="reg-main"><div class="reg-head"><div><h1>Create Company Account</h1><p>Complete the four steps below.</p></div><button class="btn light" onclick="closeRegister()">✕</button></div><div class="wizard-steps"><div class="wstep active"><b>1</b>Personal</div><div class="wstep"><b>2</b>Company</div><div class="wstep"><b>3</b>Documents</div><div class="wstep"><b>4</b>Review</div></div><div class="wizard-card"><div class="wizard-pane active" data-step="1"><div class="pane-title"><div class="pane-icon">👤</div><div><h3>Personal Information</h3><p>Details of the person responsible for the account.</p></div></div><div class="fg"><div><label class="req">Full Name</label><input id="rName"></div><div><label class="req">Mobile Number</label><input id="rMobile"></div><div><label class="req">Email</label><input id="rEmail" type="email"></div><div><label>Job Title</label><input id="rJob"></div><div><label class="req">Password</label><input id="rPass" type="password"></div><div><label class="req">Confirm Password</label><input id="rPass2" type="password"></div></div></div><div class="wizard-pane" data-step="2"><div class="pane-title"><div class="pane-icon">🏢</div><div><h3>Company Information</h3><p>Enter official details exactly as shown in the documents.</p></div></div><div class="fg"><div><label class="req">Company Name</label><input id="rCompany"></div><div><label>Trade Name</label><input id="rTrade"></div><div><label class="req">Commercial Register Number</label><input id="rCommercialNo"></div><div><label class="req">Tax Registration Number</label><input id="rTaxNo"></div><div><label>Business Activity</label><input id="rActivity"></div><div><label>Country / Governorate</label><input id="rRegion"></div><div class="full"><label class="req">Company Address</label><input id="rAddress"></div></div></div><div class="wizard-pane" data-step="3"><div class="pane-title"><div class="pane-icon">📄</div><div><h3>Documents Verification</h3><p>Upload clear PDF or image files.</p></div></div><div class="drop-grid"><label class="drop-card"><input id="rCommercialFile" class="hide" type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="regFile('commercial')"><div style="font-size:36px">📄</div><strong>Commercial Register</strong><small>Click to browse files</small><div id="commercialFileName" class="file-name"></div></label><label class="drop-card"><input id="rTaxFile" class="hide" type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="regFile('tax')"><div style="font-size:36px">🧾</div><strong>Tax Card</strong><small>Click to browse files</small><div id="taxFileName" class="file-name"></div></label></div></div><div class="wizard-pane" data-step="4"><div class="pane-title"><div class="pane-icon">✅</div><div><h3>Review & Submit</h3><p>Confirm the information before creating the account.</p></div></div><div id="regReview" class="review-grid"></div><label style="display:flex;gap:8px;margin-top:16px"><input id="rConsent" type="checkbox" style="width:auto"><span>I confirm that the supplied information is accurate.</span></label></div><div class="wizard-pane" data-step="5"><div class="success-view"><div class="check">✓</div><h2>Account submitted successfully</h2><p>Your company documents were submitted for review.</p><div class="pending-note"><b>Pending Verification</b><br><small>OTEC administration will review the documents before activating the account.</small></div><button class="btn primary" onclick="finishRegistration()">Continue to Company Profile</button></div></div></div><div id="wizardActions" class="wizard-actions"><button class="btn light" onclick="closeRegister()">Back to Sign In</button><div><button id="wizardBack" class="btn light hide" onclick="regBack()">← Back</button><button id="wizardNext" class="btn primary" onclick="regNext()">Next →</button></div></div></main></div></section><section id="app" class="app hide">
-  <aside id="side" class="side">
-    <div class="logo"><div class="mark">O</div>OTEC</div>
+  <aside id="side" class="side" onclick="if(event.target===this) closeSide()">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div class="logo"><div class="mark">O</div>OTEC</div><button class="btn light side-close" type="button" onclick="closeSide()" aria-label="Close menu">✕</button></div>
     <div class="user"><b id="uname">OTEC Admin</b><div class="mut" id="urole">ADMIN</div></div>
     <nav id="nav" class="nav"></nav>
   </aside>
+  <div id="sideBackdrop" class="side-backdrop" onclick="closeSide()"></div>
   <main>
     <header class="top">
-      <div style="display:flex;align-items:center;gap:10px"><button class="btn light menu" onclick="side.classList.toggle('open')">☰</button><b id="pageTitle">Dashboard</b></div>
+      <div style="display:flex;align-items:center;gap:10px"><button class="btn light menu" onclick="toggleSide()">☰</button><b id="pageTitle">Dashboard</b></div>
       <div class="actions"><button class="btn light" onclick="langToggle()">🌐</button><button class="btn light" onclick="alert(T('noti'))">🔔</button><button class="btn light" onclick="logout()" data-k="logout">Logout</button></div>
     </header>
     <div id="content" class="content"></div>
@@ -310,11 +303,16 @@ function doLogin(){
   if(account){companyProfile={...account.profile};activeCustomerEmail=account.email;localStorage.otecActiveCustomerEmail=activeCustomerEmail;localStorage.otecCompany=JSON.stringify(companyProfile)}
   else if(email!=="demo@otec.com"||password!=="123456"){alert("Email or password is incorrect. Please use your registered account details.");return}
   else {companyProfile={companyName:"Demo Customer Company",tradeName:"Demo Customer",commercialNo:"",taxNo:"",address:"",activity:"Manufacturing",status:"Demo Account",commercialFile:"",taxFile:"",contactName:"Demo User",email};activeCustomerEmail=email}
-  currentRole="customer";login.classList.add("hide");app.classList.remove("hide");urole.textContent="CUSTOMER";uname.textContent=customerCompany();go("dashboard")
+  closeSide();currentRole="customer";login.classList.add("hide");registration.classList.add("hide");app.classList.remove("hide");urole.textContent="CUSTOMER";uname.textContent=customerCompany();go("dashboard")
 }
-function logout(){app.classList.add("hide");login.classList.remove("hide")}
+function logout(){closeSide();app.classList.add("hide");registration.classList.add("hide");login.classList.remove("hide");window.scrollTo(0,0)}
 function menuItems(){let a=[["dashboard","▦"],["requests","⚙"],["suppliers","🏭"],["quotes","📄"],["reports","📊"],["users","👥"]];if(currentRole==="customer"){a.splice(1,0,["companyProfile","🏢"]);return a.filter(x=>["dashboard","companyProfile","requests","quotes"].includes(x[0]));}if(currentRole==="supplier")return a.filter(x=>["dashboard","requests","quotes"].includes(x[0]));if(currentRole==="engineer")return a.filter(x=>x[0]!=="users");return a}
-function go(p){current=p;nav.innerHTML=menuItems().map(x=>`<button class="${p===x[0]?"on":""}" onclick="go('${x[0]}')">${x[1]} ${T(x[0])}</button>`).join("");pageTitle.textContent=T(p);side.classList.remove("open");({dashboard:dash,companyProfile:companyProfilePage,requests:requestsPage,suppliers:supplierPage,quotes:quotesPage,reports:reportsPage,users:usersPage}[p]||dash)()}
+function openSide(){side.classList.add("open");sideBackdrop.classList.add("show");document.body.classList.add("menu-open")}
+function closeSide(){side.classList.remove("open");sideBackdrop.classList.remove("show");document.body.classList.remove("menu-open")}
+function toggleSide(){side.classList.contains("open")?closeSide():openSide()}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSide()});
+window.addEventListener("resize",()=>{if(window.innerWidth>720)closeSide()});
+function go(p){current=p;nav.innerHTML=menuItems().map(x=>`<button class="${p===x[0]?"on":""}" onclick="go('${x[0]}')">${x[1]} ${T(x[0])}</button>`).join("");pageTitle.textContent=T(p);closeSide();({dashboard:dash,companyProfile:companyProfilePage,requests:requestsPage,suppliers:supplierPage,quotes:quotesPage,reports:reportsPage,users:usersPage}[p]||dash)()}
 function badge(s){let c=s==="Approved"?"approved":s==="Rejected"?"rejected":(s==="Under Review"||s==="Engineering Review")?"review":(s==="RFQ Sent"||s==="Quote Prepared")?"rfq":"new";return `<span class="badge ${c}">${s}</span>`}
 function stat(label,n,icon){return `<div class="card stat"><div><div class="mut">${label}</div><div class="num">${n}</div></div><div class="ico">${icon}</div></div>`}
 function progress(name,v){return `<div style="display:flex;justify-content:space-between;margin:12px 0 6px"><span>${name}</span><b>${v}%</b></div><div class="bar"><span style="width:${v}%"></span></div>`}
@@ -372,8 +370,8 @@ function reportsPage(){content.innerHTML=`<div class="head"><div><h2>${T("report
 function usersPage(){let u=[["OTEC Admin","admin@otec.com","Admin"],["Ahmed Engineer","ahmed@otec.com","Engineer"],["Delta Engineering","procurement@delta.com","Customer"],["Precision Works","sales@precision.com","Supplier"]];content.innerHTML=`<div class="head"><div><h2>${T("users")}</h2><p>Roles and access</p></div><button class="btn primary">+ ${T("addUser")}</button></div><div class="card"><div class="table"><table><thead><tr><th>Name</th><th>${T("email")}</th><th>${T("role")}</th><th>${T("status")}</th></tr></thead><tbody>${u.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td><td><span class="badge approved">${T("active")}</span></td></tr>`).join("")}</tbody></table></div></div>`}
 
 let registrationStep=1;
-function openRegister(){login.classList.add("hide");registration.classList.remove("hide");registrationStep=1;showRegStep()}
-function closeRegister(){registration.classList.add("hide");login.classList.remove("hide")}
+function openRegister(){closeSide();app.classList.add("hide");login.classList.add("hide");registration.classList.remove("hide");registrationStep=1;showRegStep();window.scrollTo(0,0)}
+function closeRegister(){closeSide();registration.classList.add("hide");app.classList.add("hide");login.classList.remove("hide");window.scrollTo(0,0)}
 function showRegStep(){document.querySelectorAll(".wizard-pane").forEach(x=>x.classList.toggle("active",Number(x.dataset.step)===registrationStep));document.querySelectorAll(".wstep").forEach((x,i)=>{x.classList.toggle("active",i+1===registrationStep);x.classList.toggle("done",i+1<registrationStep)});wizardBack.classList.toggle("hide",registrationStep===1);wizardNext.textContent=registrationStep===4?"Create Company Account":"Next →";wizardActions.classList.toggle("hide",registrationStep===5);if(registrationStep===4)buildRegReview()}
 function regNext(){if(!validateReg())return;if(registrationStep<4){registrationStep++;showRegStep()}else saveRegistration()}
 function regBack(){if(registrationStep>1){registrationStep--;showRegStep()}}
@@ -419,45 +417,42 @@ applyLang();
 
 <script>
 (function(){
-  function setupTableSlider(box){
-    if(!box || box.dataset.sliderReady==='1') return;
-    box.dataset.sliderReady='1';
+  function setupTableNavigator(box){
+    if(!box || box.dataset.navigatorReady==='1') return;
+    box.dataset.navigatorReady='1';
 
-    var control=document.createElement('div');
-    control.className='mobile-scroll-control';
-    control.innerHTML='<span>↔ حرّك الجدول</span><input class="mobile-scroll-range" type="range" min="0" max="100" value="0" aria-label="Horizontal table position">';
-    box.insertAdjacentElement('afterend',control);
-    var range=control.querySelector('input');
-    var syncing=false;
+    var nav=document.createElement('div');
+    nav.className='table-navigator is-hidden';
+    nav.innerHTML='<button class="table-nav-btn table-nav-prev" type="button" aria-label="Previous columns">‹</button><div class="table-nav-track"><div class="table-nav-progress"></div></div><button class="table-nav-btn table-nav-next" type="button" aria-label="Next columns">›</button>';
+    box.insertAdjacentElement('afterend',nav);
+    var prev=nav.querySelector('.table-nav-prev');
+    var next=nav.querySelector('.table-nav-next');
+    var progress=nav.querySelector('.table-nav-progress');
 
     function maxScroll(){return Math.max(0,box.scrollWidth-box.clientWidth)}
+    function hasRows(){var tbody=box.querySelector('tbody'); return !tbody || tbody.querySelectorAll('tr').length>0}
     function refresh(){
       var max=maxScroll();
-      control.classList.toggle('is-hidden',window.innerWidth>720 || max<3);
-      if(!syncing) range.value=max?Math.round((box.scrollLeft/max)*100):0;
+      var show=window.innerWidth<=720 && max>8 && hasRows();
+      nav.classList.toggle('is-hidden',!show);
+      if(!show) return;
+      var ratio=max?Math.max(0,Math.min(1,box.scrollLeft/max)):0;
+      progress.style.transform='translateX('+(ratio*257)+'%)';
+      prev.disabled=box.scrollLeft<=3;
+      next.disabled=box.scrollLeft>=max-3;
     }
-    range.addEventListener('input',function(){
-      var max=maxScroll(); syncing=true;
-      box.scrollLeft=max*(Number(range.value)/100);
-      requestAnimationFrame(function(){syncing=false});
-    });
-    box.addEventListener('scroll',function(){
-      if(syncing) return;
-      var max=maxScroll();
-      range.value=max?Math.round((box.scrollLeft/max)*100):0;
-    },{passive:true});
+    function step(dir){box.scrollBy({left:dir*Math.max(220,box.clientWidth*.72),behavior:'smooth'})}
+    prev.addEventListener('click',function(){step(-1)});
+    next.addEventListener('click',function(){step(1)});
+    box.addEventListener('scroll',refresh,{passive:true});
     window.addEventListener('resize',refresh,{passive:true});
-    setTimeout(refresh,0);
-    setTimeout(refresh,250);
+    setTimeout(refresh,0);setTimeout(refresh,300);
   }
-
-  function setupAll(root){
-    (root||document).querySelectorAll('.table').forEach(setupTableSlider);
-  }
+  function setupAll(root){(root||document).querySelectorAll('.table').forEach(setupTableNavigator)}
   document.addEventListener('DOMContentLoaded',function(){
     setupAll(document);
     var target=document.getElementById('content')||document.body;
-    new MutationObserver(function(){setupAll(target)}).observe(target,{childList:true,subtree:true});
+    new MutationObserver(function(){setupAll(target);document.querySelectorAll('.table').forEach(function(x){x.dispatchEvent(new Event('scroll'))})}).observe(target,{childList:true,subtree:true});
     var modal=document.getElementById('modal');
     if(modal) new MutationObserver(function(){setupAll(modal)}).observe(modal,{childList:true,subtree:true});
   });
