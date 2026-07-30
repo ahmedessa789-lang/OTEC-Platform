@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>OTEC Manufacturing Platform V5.3 Mobile Responsive</title>
+<title>OTEC Manufacturing Platform V5.4 True Mobile Layout</title>
 <style>
 :root{--p:#123f6d;--p2:#1f6fa8;--bg:#f4f7fb;--card:#fff;--txt:#1d2735;--mut:#6d7885;--bd:#dce4ec;--ok:#198754;--warn:#c27a00;--bad:#b53a30}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--txt)}
@@ -132,6 +132,41 @@ button,.btn,.mini,.close{touch-action:manipulation;-webkit-tap-highlight-color:t
   .pane-title h3{font-size:17px}
   .order-actions .btn{font-size:12px}
 }
+
+/* V5.4 — True mobile page layout: no clipped tables, full vertical scrolling */
+html{height:auto;min-height:100%;overflow-y:auto;-webkit-text-size-adjust:100%}
+body{height:auto;min-height:100%;overflow-y:auto;overscroll-behavior-y:auto}
+main,.main,.content,.app>div{min-width:0}
+.app{height:auto;min-height:100dvh;overflow:visible}
+
+@media(max-width:720px){
+  html,body{overflow-x:hidden!important;overflow-y:auto!important;height:auto!important;min-height:100%!important}
+  .app{display:block!important;width:100%;height:auto!important;min-height:100dvh;overflow:visible!important}
+  .app>.main,.app>main,.main{width:100%;min-width:0;overflow:visible}
+  .content{width:100%;max-width:100%;overflow:visible;padding-bottom:calc(34px + env(safe-area-inset-bottom))}
+  .head{width:100%}
+  .head>.btn{display:flex;align-items:center;justify-content:center;text-align:center}
+  .card{max-width:100%;overflow:hidden}
+
+  /* Convert every data table to readable stacked cards on phones. */
+  .table{overflow:visible!important;width:100%;max-width:100%;margin:0!important}
+  .table table,.summary-table{display:block!important;width:100%!important;min-width:0!important;border-collapse:separate}
+  .table thead,.summary-table thead{display:none!important}
+  .table tbody,.summary-table tbody{display:grid!important;gap:12px;width:100%}
+  .table tr,.summary-table tr{display:block!important;width:100%;background:#fff;border:1px solid var(--bd);border-radius:14px;padding:8px 12px;box-shadow:0 5px 15px #123f6d0b}
+  .table td,.summary-table td{display:flex!important;justify-content:space-between;align-items:flex-start;gap:14px;width:100%!important;padding:10px 0!important;border:0!important;border-bottom:1px solid #e8edf2!important;text-align:right!important;font-size:13px!important;white-space:normal!important;overflow-wrap:anywhere}
+  .table td:last-child,.summary-table td:last-child{border-bottom:0!important}
+  .table td::before,.summary-table td::before{content:attr(data-label);flex:0 0 42%;max-width:42%;font-weight:800;color:#536171;text-align:left;line-height:1.35}
+  .table td>*,.summary-table td>*{max-width:58%}
+  .table td .mini{margin:2px 0 2px 4px;max-width:none}
+  .table td[data-label="Actions"]{display:flex!important;flex-wrap:wrap;justify-content:flex-end}
+  .table td[data-label="Actions"]::before{width:100%;max-width:none;flex-basis:100%;text-align:left;margin-bottom:4px}
+
+  /* Keep modal contents independently scrollable while page remains natural. */
+  .modal{overflow:hidden}
+  .modalbox{overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch}
+}
+
 </style>
 </head>
 <body>
@@ -263,5 +298,28 @@ function companyProfilePage(){content.innerHTML=`<div class="head"><div><h2>${T(
 
 applyLang();
 </script>
+
+<script>
+(function(){
+  function labelResponsiveTables(root){
+    (root||document).querySelectorAll('.table table, table.summary-table').forEach(function(tbl){
+      var heads=Array.from(tbl.querySelectorAll('thead th')).map(function(th){return th.textContent.trim()});
+      tbl.querySelectorAll('tbody tr').forEach(function(tr){
+        Array.from(tr.children).forEach(function(td,i){
+          if(!td.dataset.label) td.dataset.label=heads[i]||('Field '+(i+1));
+        });
+      });
+    });
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    labelResponsiveTables(document);
+    var target=document.getElementById('content')||document.body;
+    new MutationObserver(function(){labelResponsiveTables(target)}).observe(target,{childList:true,subtree:true});
+    var modal=document.getElementById('modal');
+    if(modal) new MutationObserver(function(){labelResponsiveTables(modal)}).observe(modal,{childList:true,subtree:true});
+  });
+})();
+</script>
+
 </body>
 </html>
