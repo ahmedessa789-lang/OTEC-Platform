@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>OTEC Manufacturing Platform V6.0 Mobile Menu Outside Tap Fix</title>
+<title>OTEC Manufacturing Platform V6.1 Clean Mobile Drawer</title>
 <style>
 :root{--p:#123f6d;--p2:#1f6fa8;--bg:#f4f7fb;--card:#fff;--txt:#1d2735;--mut:#6d7885;--bd:#dce4ec;--ok:#198754;--warn:#c27a00;--bad:#b53a30}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--txt)}
@@ -255,6 +255,44 @@ main,.main,.content,.app>div{min-width:0}
   .side{z-index:40!important}
 }
 
+
+/* V6.1 — clean mobile-first drawer rebuilt without sidebar patches */
+.drawer-backdrop{display:none;border:0;padding:0;margin:0}
+@media (max-width:720px){
+  html,body{max-width:100%;overflow-x:hidden}
+  .app{display:block;min-height:100dvh}
+  .app.hide{display:none!important}
+  .app>main{min-width:0;width:100%}
+  .side{
+    position:fixed!important;inset:0 auto 0 0!important;
+    width:min(84vw,340px)!important;height:100dvh!important;
+    padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom))!important;
+    transform:translate3d(-105%,0,0)!important;left:auto!important;
+    transition:transform .28s cubic-bezier(.22,.75,.18,1)!important;
+    z-index:1001!important;overflow-y:auto!important;overscroll-behavior:contain;
+    box-shadow:18px 0 52px rgba(2,15,29,.34)!important;visibility:hidden;
+  }
+  .side.open{transform:translate3d(0,0,0)!important;visibility:visible!important}
+  [dir="rtl"] .side{inset:0 0 0 auto!important;transform:translate3d(105%,0,0)!important;box-shadow:-18px 0 52px rgba(2,15,29,.34)!important}
+  [dir="rtl"] .side.open{transform:translate3d(0,0,0)!important}
+  .drawer-backdrop{
+    display:block;position:fixed;inset:0;width:100vw;height:100dvh;
+    background:rgba(3,15,27,.56);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+    z-index:1000;opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .22s ease,visibility 0s linear .22s;
+  }
+  .drawer-backdrop.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .22s ease}
+  html.drawer-open,body.drawer-open{overflow:hidden!important;touch-action:none}
+  .side{touch-action:pan-y}
+  .side-close{display:grid!important;width:42px;height:42px;padding:0;border-radius:12px}
+  .top{z-index:20;padding-inline:16px}
+  .menu{display:grid!important;place-items:center;width:48px;height:48px;padding:0;font-size:24px}
+}
+@media (min-width:721px){
+  .drawer-backdrop{display:none!important}
+  .side{visibility:visible!important;transform:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -278,12 +316,11 @@ main,.main,.content,.app>div{min-width:0}
 </section>
 
 <section id="registration" class="registration hide"><div class="reg-wrap"><aside class="reg-left"><div class="logo"><div class="mark">O</div>OTEC</div><h2>Create your company workspace</h2><p>Complete your profile and company verification through a secure onboarding experience.</p><div class="reg-point"><i>✓</i><div><b>Personal account</b><br><small>Secure sign-in for the responsible user.</small></div></div><div class="reg-point"><i>✓</i><div><b>Company verification</b><br><small>Commercial register and tax card review.</small></div></div><div class="reg-point"><i>✓</i><div><b>Ready for orders</b><br><small>Submit drawings after approval.</small></div></div></aside><main class="reg-main"><div class="reg-head"><div><h1>Create Company Account</h1><p>Complete the four steps below.</p></div><button class="btn light" onclick="closeRegister()">✕</button></div><div class="wizard-steps"><div class="wstep active"><b>1</b>Personal</div><div class="wstep"><b>2</b>Company</div><div class="wstep"><b>3</b>Documents</div><div class="wstep"><b>4</b>Review</div></div><div class="wizard-card"><div class="wizard-pane active" data-step="1"><div class="pane-title"><div class="pane-icon">👤</div><div><h3>Personal Information</h3><p>Details of the person responsible for the account.</p></div></div><div class="fg"><div><label class="req">Full Name</label><input id="rName"></div><div><label class="req">Mobile Number</label><input id="rMobile"></div><div><label class="req">Email</label><input id="rEmail" type="email"></div><div><label>Job Title</label><input id="rJob"></div><div><label class="req">Password</label><input id="rPass" type="password"></div><div><label class="req">Confirm Password</label><input id="rPass2" type="password"></div></div></div><div class="wizard-pane" data-step="2"><div class="pane-title"><div class="pane-icon">🏢</div><div><h3>Company Information</h3><p>Enter official details exactly as shown in the documents.</p></div></div><div class="fg"><div><label class="req">Company Name</label><input id="rCompany"></div><div><label>Trade Name</label><input id="rTrade"></div><div><label class="req">Commercial Register Number</label><input id="rCommercialNo"></div><div><label class="req">Tax Registration Number</label><input id="rTaxNo"></div><div><label>Business Activity</label><input id="rActivity"></div><div><label>Country / Governorate</label><input id="rRegion"></div><div class="full"><label class="req">Company Address</label><input id="rAddress"></div></div></div><div class="wizard-pane" data-step="3"><div class="pane-title"><div class="pane-icon">📄</div><div><h3>Documents Verification</h3><p>Upload clear PDF or image files.</p></div></div><div class="drop-grid"><label class="drop-card"><input id="rCommercialFile" class="hide" type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="regFile('commercial')"><div style="font-size:36px">📄</div><strong>Commercial Register</strong><small>Click to browse files</small><div id="commercialFileName" class="file-name"></div></label><label class="drop-card"><input id="rTaxFile" class="hide" type="file" accept=".pdf,.jpg,.jpeg,.png" onchange="regFile('tax')"><div style="font-size:36px">🧾</div><strong>Tax Card</strong><small>Click to browse files</small><div id="taxFileName" class="file-name"></div></label></div></div><div class="wizard-pane" data-step="4"><div class="pane-title"><div class="pane-icon">✅</div><div><h3>Review & Submit</h3><p>Confirm the information before creating the account.</p></div></div><div id="regReview" class="review-grid"></div><label style="display:flex;gap:8px;margin-top:16px"><input id="rConsent" type="checkbox" style="width:auto"><span>I confirm that the supplied information is accurate.</span></label></div><div class="wizard-pane" data-step="5"><div class="success-view"><div class="check">✓</div><h2>Account submitted successfully</h2><p>Your company documents were submitted for review.</p><div class="pending-note"><b>Pending Verification</b><br><small>OTEC administration will review the documents before activating the account.</small></div><button class="btn primary" onclick="finishRegistration()">Continue to Company Profile</button></div></div></div><div id="wizardActions" class="wizard-actions"><button class="btn light" onclick="closeRegister()">Back to Sign In</button><div><button id="wizardBack" class="btn light hide" onclick="regBack()">← Back</button><button id="wizardNext" class="btn primary" onclick="regNext()">Next →</button></div></div></main></div></section><section id="app" class="app hide">
-  <aside id="side" class="side" onclick="if(event.target===this) closeSide()">
+  <aside id="side" class="side" aria-hidden="true">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div class="logo"><div class="mark">O</div>OTEC</div><button class="btn light side-close" type="button" onclick="closeSide()" aria-label="Close menu">✕</button></div>
     <div class="user"><b id="uname">OTEC Admin</b><div class="mut" id="urole">ADMIN</div></div>
     <nav id="nav" class="nav"></nav>
   </aside>
-  <div id="sideBackdrop" class="side-backdrop" onclick="closeSide()"></div>
   <main>
     <header class="top">
       <div style="display:flex;align-items:center;gap:10px"><button class="btn light menu" onclick="toggleSide()">☰</button><b id="pageTitle">Dashboard</b></div>
@@ -292,6 +329,7 @@ main,.main,.content,.app>div{min-width:0}
     <div id="content" class="content"></div>
   </main>
 </section>
+<button id="sideBackdrop" class="drawer-backdrop" type="button" aria-label="Close navigation menu"></button>
 <div id="modal" class="modal hide"></div>
 
 <script>
@@ -328,8 +366,21 @@ function doLogin(){
 }
 function logout(){closeSide();app.classList.add("hide");registration.classList.add("hide");login.classList.remove("hide");window.scrollTo(0,0)}
 function menuItems(){let a=[["dashboard","▦"],["requests","⚙"],["suppliers","🏭"],["quotes","📄"],["reports","📊"],["users","👥"]];if(currentRole==="customer"){a.splice(1,0,["companyProfile","🏢"]);return a.filter(x=>["dashboard","companyProfile","requests","quotes"].includes(x[0]));}if(currentRole==="supplier")return a.filter(x=>["dashboard","requests","quotes"].includes(x[0]));if(currentRole==="engineer")return a.filter(x=>x[0]!=="users");return a}
-function openSide(){side.classList.add("open");sideBackdrop.classList.add("show");document.body.classList.add("menu-open")}
-function closeSide(){side.classList.remove("open");sideBackdrop.classList.remove("show");document.body.classList.remove("menu-open")}
+function openSide(){
+  if(window.innerWidth>720) return;
+  side.classList.add("open");
+  side.setAttribute("aria-hidden","false");
+  sideBackdrop.classList.add("show");
+  document.documentElement.classList.add("drawer-open");
+  document.body.classList.add("drawer-open");
+}
+function closeSide(){
+  side.classList.remove("open");
+  side.setAttribute("aria-hidden","true");
+  sideBackdrop.classList.remove("show");
+  document.documentElement.classList.remove("drawer-open");
+  document.body.classList.remove("drawer-open");
+}
 function toggleSide(){side.classList.contains("open")?closeSide():openSide()}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSide()});
 window.addEventListener("resize",()=>{if(window.innerWidth>720)closeSide()});
@@ -412,13 +463,15 @@ function companyProfilePage(){content.innerHTML=`<div class="head"><div><h2>${T(
 
 applyLang();
 
-// V6.0: reliably close the mobile drawer when the user taps the page outside it.
-document.addEventListener("pointerdown", function(e){
-  if(window.innerWidth > 720 || !side.classList.contains("open")) return;
-  const menuButton = e.target.closest(".menu");
-  if(menuButton || side.contains(e.target)) return;
-  closeSide();
-}, true);
+// V6.1 clean drawer controls — the backdrop is a real full-screen button outside the app layout.
+sideBackdrop.addEventListener("click", closeSide);
+sideBackdrop.addEventListener("touchend", function(e){ e.preventDefault(); closeSide(); }, {passive:false});
+side.addEventListener("click", function(e){
+  const navButton=e.target.closest(".nav button");
+  if(navButton && window.innerWidth<=720) closeSide();
+});
+document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeSide(); });
+window.addEventListener("resize", function(){ if(window.innerWidth>720) closeSide(); });
 
 </script>
 
