@@ -167,6 +167,81 @@ main,.main,.content,.app>div{min-width:0}
   .modalbox{overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch}
 }
 
+
+
+/* V5.5 — Mobile tables use horizontal scrolling with a visible control slider */
+@media(max-width:720px){
+  .table{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x pan-y;
+    padding:0 0 8px!important;
+    margin:0!important;
+    scrollbar-width:thin;
+    scrollbar-color:#174c7c #dfe8ef;
+  }
+  .table::-webkit-scrollbar{height:10px}
+  .table::-webkit-scrollbar-track{background:#dfe8ef;border-radius:999px}
+  .table::-webkit-scrollbar-thumb{background:#174c7c;border-radius:999px;border:2px solid #dfe8ef}
+
+  .table table,.summary-table{
+    display:table!important;
+    width:max-content!important;
+    min-width:760px!important;
+    border-collapse:collapse!important;
+  }
+  .table thead,.summary-table thead{display:table-header-group!important}
+  .table tbody,.summary-table tbody{display:table-row-group!important}
+  .table tr,.summary-table tr{
+    display:table-row!important;
+    width:auto!important;
+    background:transparent!important;
+    border:0!important;
+    border-radius:0!important;
+    padding:0!important;
+    box-shadow:none!important;
+  }
+  .table th,.table td,.summary-table th,.summary-table td{
+    display:table-cell!important;
+    width:auto!important;
+    min-width:120px;
+    padding:12px!important;
+    border-bottom:1px solid var(--bd)!important;
+    text-align:left!important;
+    white-space:normal!important;
+    vertical-align:middle!important;
+    font-size:13px!important;
+  }
+  .table th:first-child,.table td:first-child{position:sticky;left:0;z-index:2;background:#fff;min-width:145px}
+  .table th:first-child{z-index:3;background:#f8fafc}
+  .table td::before,.summary-table td::before{content:none!important;display:none!important}
+  .table td>*,.summary-table td>*{max-width:none!important}
+
+  .mobile-scroll-control{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin:10px 2px 2px;
+    padding:9px 11px;
+    border:1px solid var(--bd);
+    border-radius:12px;
+    background:#f6f9fb;
+  }
+  .mobile-scroll-control span{font-size:12px;font-weight:800;color:#536171;white-space:nowrap}
+  .mobile-scroll-range{
+    width:100%;
+    min-width:0;
+    accent-color:#174c7c;
+    height:28px;
+    margin:0;
+  }
+  .mobile-scroll-control.is-hidden{display:none!important}
+}
+@media(min-width:721px){.mobile-scroll-control{display:none!important}}
 </style>
 </head>
 <body>
@@ -181,8 +256,8 @@ main,.main,.content,.app>div{min-width:0}
       <div style="display:flex;justify-content:flex-end"><button class="btn light" onclick="langToggle()">AR / EN</button></div>
       <h2 data-k="signin">Sign in</h2>
       <div class="sub">Sign in with your personal account details.</div>
-      <div class="field"><label data-k="email">Email</label><input value="demo@otec.com"></div>
-      <div class="field"><label data-k="password">Password</label><input type="password" value="123456"></div>
+      <div class="field"><label data-k="email">Email</label><input id="loginEmail" value="demo@otec.com" autocomplete="email"></div>
+      <div class="field"><label data-k="password">Password</label><input id="loginPassword" type="password" value="123456" autocomplete="current-password"></div>
       <div class="login-actions"><button class="btn primary" onclick="doLogin()" data-k="login">Login</button><button class="btn light" onclick="openRegister()">Create Personal & Company Account</button></div>
       <div class="note" data-k="demo">Demo data is stored locally in your browser.</div>
     </div>
@@ -210,7 +285,12 @@ const tr={
 en:{heroTitle:"Digital Manufacturing Platform",heroText:"Manage manufacturing requests, engineering review, supplier quotations and approvals in one responsive web platform.",signin:"Sign in",choose:"Sign in with your personal account details.",role:"Role",email:"Email",password:"Password",login:"Login",logout:"Logout",demo:"Demo data is stored locally in your browser.",dashboard:"Dashboard",requests:"Manufacturing Requests",suppliers:"Suppliers",quotes:"Quotations",reports:"Reports",users:"Users",welcome:"Welcome",overview:"Platform Overview",total:"Total Requests",reviewing:"Under Review",waiting:"Awaiting Quotations",approved:"Approved",recent:"Recent Requests",newRequest:"New Request",id:"Request No.",customer:"Customer",part:"Part / Product",qty:"Quantity",status:"Status",date:"Date",actions:"Actions",view:"View",review:"Review",send:"Send RFQ",approve:"Approve",reject:"Reject",title:"Title",material:"Material",description:"Description",target:"Target Date",save:"Save",cancel:"Cancel",details:"Request Details",contact:"Contact",specialization:"Specialization",score:"Score",open:"Open RFQs",price:"Price",delivery:"Delivery Time",company:"Company",noti:"You have 3 new workflow notifications.",monthly:"Monthly Requests",performance:"Supplier Performance",addSupplier:"Add Supplier",addUser:"Add User",active:"Active",companyProfile:"Company Profile",register:"Create Account",personalData:"Personal Information",companyData:"Company Information",commercialRegister:"Commercial Register",taxCard:"Tax Card",accountStatus:"Account Status",pendingVerification:"Pending Verification",orderType:"Order Type",prototype:"Prototype",finalProduct:"Final Product",prototypeThenProduction:"Prototype then Final Production",files:"AutoCAD / Technical Files"},
 ar:{heroTitle:"منصة التصنيع الرقمية",heroText:"إدارة طلبات التصنيع والمراجعة الهندسية وعروض الموردين والموافقات من خلال منصة ويب متجاوبة.",signin:"تسجيل الدخول",choose:"سجل الدخول باستخدام بيانات حسابك الشخصية.",role:"الصلاحية",email:"البريد الإلكتروني",password:"كلمة المرور",login:"دخول",logout:"خروج",demo:"بيانات النسخة التجريبية محفوظة محلياً داخل المتصفح.",dashboard:"لوحة التحكم",requests:"طلبات التصنيع",suppliers:"الموردون",quotes:"عروض الأسعار",reports:"التقارير",users:"المستخدمون",welcome:"مرحباً",overview:"نظرة عامة",total:"إجمالي الطلبات",reviewing:"تحت المراجعة",waiting:"بانتظار عروض",approved:"تمت الموافقة",recent:"أحدث الطلبات",newRequest:"طلب جديد",id:"رقم الطلب",customer:"العميل",part:"القطعة / المنتج",qty:"الكمية",status:"الحالة",date:"التاريخ",actions:"الإجراءات",view:"عرض",review:"مراجعة",send:"إرسال طلب تسعير",approve:"موافقة",reject:"رفض",title:"العنوان",material:"الخامة",description:"الوصف",target:"التاريخ المطلوب",save:"حفظ",cancel:"إلغاء",details:"تفاصيل الطلب",contact:"التواصل",specialization:"التخصص",score:"التقييم",open:"طلبات التسعير المفتوحة",price:"السعر",delivery:"مدة التوريد",company:"الشركة",noti:"لديك 3 إشعارات جديدة.",monthly:"الطلبات الشهرية",performance:"أداء الموردين",addSupplier:"إضافة مورد",addUser:"إضافة مستخدم",active:"نشط",companyProfile:"بيانات الشركة",register:"إنشاء حساب",personalData:"البيانات الشخصية",companyData:"بيانات الشركة",commercialRegister:"السجل التجاري",taxCard:"البطاقة الضريبية",accountStatus:"حالة الحساب",pendingVerification:"قيد المراجعة",orderType:"نوع الطلب",prototype:"نموذج مبدئي",finalProduct:"منتج نهائي",prototypeThenProduction:"نموذج مبدئي ثم إنتاج نهائي",files:"ملفات أوتوكاد / الملفات الفنية"}};
 let lang=localStorage.otecLang||"en", current="dashboard", currentRole="admin";
-let companyProfile=JSON.parse(localStorage.otecCompany||`{"companyName":"Delta Engineering","tradeName":"Delta","commercialNo":"","taxNo":"","address":"","activity":"Steel & Engineering","status":"Pending Verification","commercialFile":"","taxFile":""}`);
+let companyProfile=JSON.parse(localStorage.otecCompany||`{"companyName":"","tradeName":"","commercialNo":"","taxNo":"","address":"","activity":"","status":"Pending Verification","commercialFile":"","taxFile":""}`);
+let customerAccounts=JSON.parse(localStorage.otecCustomerAccounts||"[]");
+let activeCustomerEmail=localStorage.otecActiveCustomerEmail||"";
+function customerCompany(){return (companyProfile.companyName||companyProfile.tradeName||"Customer Company").trim()}
+function customerRequests(){let name=customerCompany();return req.filter(x=>x.customer===name)}
+function saveCustomerAccounts(){localStorage.otecCustomerAccounts=JSON.stringify(customerAccounts)}
 let selectedOrderFiles=[];
 let req=JSON.parse(localStorage.otecReq||`[
 {"id":"MFG-1001","customer":"Delta Engineering","part":"CNC Aluminum Bracket","qty":250,"status":"Under Review","date":"2026-07-22","material":"Aluminum 6061","description":"Precision machined bracket."},
@@ -223,7 +303,15 @@ const qts=[["Q-501","MFG-1002","Metal Form Egypt","86,500 EGP","21 Days","Pendin
 const T=k=>tr[lang][k]||k;
 function applyLang(){document.documentElement.lang=lang;document.documentElement.dir=lang==="ar"?"rtl":"ltr";document.querySelectorAll("[data-k]").forEach(x=>x.textContent=T(x.dataset.k))}
 function langToggle(){lang=lang==="en"?"ar":"en";localStorage.otecLang=lang;applyLang();if(!app.classList.contains("hide")) go(current)}
-function doLogin(){currentRole="customer";login.classList.add("hide");app.classList.remove("hide");urole.textContent="CUSTOMER";uname.textContent=companyProfile.contactName||companyProfile.companyName||"Customer Account";go("dashboard")}
+function doLogin(){
+  const email=(loginEmail.value||"").trim().toLowerCase();
+  const password=loginPassword.value||"";
+  const account=customerAccounts.find(a=>(a.email||"").toLowerCase()===email&&a.password===password);
+  if(account){companyProfile={...account.profile};activeCustomerEmail=account.email;localStorage.otecActiveCustomerEmail=activeCustomerEmail;localStorage.otecCompany=JSON.stringify(companyProfile)}
+  else if(email!=="demo@otec.com"||password!=="123456"){alert("Email or password is incorrect. Please use your registered account details.");return}
+  else {companyProfile={companyName:"Demo Customer Company",tradeName:"Demo Customer",commercialNo:"",taxNo:"",address:"",activity:"Manufacturing",status:"Demo Account",commercialFile:"",taxFile:"",contactName:"Demo User",email};activeCustomerEmail=email}
+  currentRole="customer";login.classList.add("hide");app.classList.remove("hide");urole.textContent="CUSTOMER";uname.textContent=customerCompany();go("dashboard")
+}
 function logout(){app.classList.add("hide");login.classList.remove("hide")}
 function menuItems(){let a=[["dashboard","▦"],["requests","⚙"],["suppliers","🏭"],["quotes","📄"],["reports","📊"],["users","👥"]];if(currentRole==="customer"){a.splice(1,0,["companyProfile","🏢"]);return a.filter(x=>["dashboard","companyProfile","requests","quotes"].includes(x[0]));}if(currentRole==="supplier")return a.filter(x=>["dashboard","requests","quotes"].includes(x[0]));if(currentRole==="engineer")return a.filter(x=>x[0]!=="users");return a}
 function go(p){current=p;nav.innerHTML=menuItems().map(x=>`<button class="${p===x[0]?"on":""}" onclick="go('${x[0]}')">${x[1]} ${T(x[0])}</button>`).join("");pageTitle.textContent=T(p);side.classList.remove("open");({dashboard:dash,companyProfile:companyProfilePage,requests:requestsPage,suppliers:supplierPage,quotes:quotesPage,reports:reportsPage,users:usersPage}[p]||dash)()}
@@ -231,8 +319,8 @@ function badge(s){let c=s==="Approved"?"approved":s==="Rejected"?"rejected":(s==
 function stat(label,n,icon){return `<div class="card stat"><div><div class="mut">${label}</div><div class="num">${n}</div></div><div class="ico">${icon}</div></div>`}
 function progress(name,v){return `<div style="display:flex;justify-content:space-between;margin:12px 0 6px"><span>${name}</span><b>${v}%</b></div><div class="bar"><span style="width:${v}%"></span></div>`}
 function table(data,acts=true){return `<div class="table"><table><thead><tr><th>${T("id")}</th><th>${T("customer")}</th><th>${T("part")}</th><th>${T("qty")}</th><th>${T("status")}</th><th>${T("date")}</th>${acts?`<th>${T("actions")}</th>`:""}</tr></thead><tbody>${data.map(r=>`<tr><td><b>${r.id}</b></td><td>${r.customer}</td><td>${r.part}</td><td>${r.qty}</td><td>${badge(r.status)}</td><td>${r.date}</td>${acts?`<td><button class="mini light" onclick="viewReq('${r.id}')">${T("view")}</button> ${(currentRole==="engineer"||currentRole==="admin")?`<button class="mini light" onclick="setStatus('${r.id}','Under Review')">${T("review")}</button><button class="mini primary" onclick="setStatus('${r.id}','RFQ Sent')">${T("send")}</button>`:""} ${currentRole==="admin"?`<button class="mini success" onclick="setStatus('${r.id}','Approved')">${T("approve")}</button>`:""}</td>`:""}</tr>`).join("")}</tbody></table></div>`}
-function dash(){let a=req.filter(x=>x.status==="Approved").length,b=req.filter(x=>x.status==="Under Review").length,c=req.filter(x=>x.status==="RFQ Sent").length;content.innerHTML=`<div class="head"><div><h2>${T("welcome")}, ${uname.textContent}</h2><p>${T("overview")}</p></div>${currentRole==="customer"?`<button class="btn primary" onclick="newReq()">+ ${T("newRequest")}</button>`:""}</div><div class="grid g4">${stat(T("total"),req.length,"⚙")}${stat(T("reviewing"),b,"🔎")}${stat(T("waiting"),c,"📨")}${stat(T("approved"),a,"✓")}</div><div class="grid g2" style="margin-top:16px"><div class="card"><h3>${T("recent")}</h3>${table(req.slice(0,5),false)}</div><div class="card"><h3>${T("monthly")}</h3>${progress("May",52)}${progress("June",72)}${progress("July",88)}<h3 style="margin-top:22px">${T("performance")}</h3>${progress("Precision Works",94)}${progress("Metal Form",91)}${progress("PolyTech",88)}</div></div>`}
-function requestsPage(){let d=currentRole==="customer"?req.filter(x=>x.customer==="Delta Engineering"):req;content.innerHTML=`<div class="head"><div><h2>${T("requests")}</h2><p>${d.length} records</p></div>${currentRole==="customer"?`<button class="btn primary" onclick="newReq()">+ ${T("newRequest")}</button>`:""}</div><div class="card">${table(d)}</div>`}
+function dash(){let d=currentRole==="customer"?customerRequests():req;let a=d.filter(x=>x.status==="Approved").length,b=d.filter(x=>x.status==="Under Review"||x.status==="Engineering Review").length,c=d.filter(x=>x.status==="RFQ Sent"||x.status==="Quote Prepared").length;content.innerHTML=`<div class="head"><div><h2>${T("welcome")}, ${currentRole==="customer"?customerCompany():uname.textContent}</h2><p>${T("overview")}</p></div>${currentRole==="customer"?`<button class="btn primary" onclick="newReq()">+ ${T("newRequest")}</button>`:""}</div><div class="grid g4">${stat(T("total"),d.length,"⚙")}${stat(T("reviewing"),b,"🔎")}${stat(T("waiting"),c,"📨")}${stat(T("approved"),a,"✓")}</div><div class="grid g2" style="margin-top:16px"><div class="card"><h3>${T("recent")}</h3>${d.length?table(d.slice(0,5),false):`<p class="mut">No manufacturing requests have been submitted for ${customerCompany()} yet.</p>`}</div><div class="card"><h3>${T("monthly")}</h3>${progress("May",52)}${progress("June",72)}${progress("July",88)}<h3 style="margin-top:22px">${T("performance")}</h3>${progress("Precision Works",94)}${progress("Metal Form",91)}${progress("PolyTech",88)}</div></div>`}
+function requestsPage(){let d=currentRole==="customer"?customerRequests():req;content.innerHTML=`<div class="head"><div><h2>${T("requests")}</h2><p>${d.length} records</p></div>${currentRole==="customer"?`<button class="btn primary" onclick="newReq()">+ ${T("newRequest")}</button>`:""}</div><div class="card">${table(d)}</div>`}
 let orderWizardStep=1,orderParts=[],orderDraft={};
 function newReq(){
   orderWizardStep=1;orderParts=[];orderDraft={};
@@ -272,7 +360,7 @@ function partsConfigHTML(){return orderParts.map((p,i)=>`<div class="part-card">
 function capturePartConfig(){document.querySelectorAll('[data-p][data-f]').forEach(el=>{let p=orderParts.find(x=>String(x.uid)===el.dataset.p);if(p)p[el.dataset.f]=el.type==='number'?Number(el.value):el.value})}
 function bumpRevision(uid){let p=orderParts.find(x=>x.uid===uid);if(p){p.revision='R'+(Number(p.revision.slice(1)||1)+1);partsConfig.innerHTML=partsConfigHTML()}}
 function orderReviewHTML(){return `<div class="grid g2"><div class="review-box"><h4>Project</h4><div class="rline"><span>Name</span><b>${orderDraft.title}</b></div><div class="rline"><span>Type</span><b>${orderDraft.orderType}</b></div><div class="rline"><span>Required Date</span><b>${orderDraft.target}</b></div><div class="rline"><span>Reference</span><b>${orderDraft.reference||'-'}</b></div></div><div class="review-box"><h4>Request Summary</h4><div class="rline"><span>Parts</span><b>${orderParts.length}</b></div><div class="rline"><span>Total Quantity</span><b>${orderParts.reduce((a,p)=>a+Number(p.qty||0),0)}</b></div><div class="rline"><span>Files</span><b>${orderParts.map(p=>p.name.split('.').pop().toUpperCase()).join(', ')}</b></div><div class="rline"><span>Review SLA</span><b>24–48 hours</b></div></div></div><div class="table" style="margin-top:14px"><table class="summary-table"><thead><tr><th>Part</th><th>Material</th><th>Thickness</th><th>Qty</th><th>Finish</th><th>Revision</th></tr></thead><tbody>${orderParts.map(p=>`<tr><td><b>${p.partName}</b><div class="mut">${p.name}</div></td><td>${p.material}</td><td>${p.thickness}</td><td>${p.qty}</td><td>${p.finish}</td><td><span class="rev">${p.revision}</span></td></tr>`).join('')}</tbody></table></div><div class="secure-note" style="margin-top:14px"><span>🔐</span><div><b>Confidential files</b><div class="mut">All files are stored with controlled access and revision tracking.</div></div></div>`}
-function submitOrder(){let id='RFQ-'+new Date().getFullYear()+'-'+String(1001+req.length).padStart(4,'0');orderDraft.id=id;let total=orderParts.reduce((a,p)=>a+Number(p.qty||0),0);req.unshift({id,customer:companyProfile.companyName||'Delta Engineering',part:orderDraft.title,qty:total,status:'Engineering Review',date:new Date().toISOString().slice(0,10),material:orderParts.length===1?orderParts[0].material:'Multiple Materials',description:orderDraft.description,orderType:orderDraft.orderType,target:orderDraft.target,address:orderDraft.address,reference:orderDraft.reference,parts:orderParts,files:orderParts.map(p=>({name:p.name,size:p.size,type:p.type,revision:p.revision})),audit:[{time:new Date().toLocaleString(),action:'RFQ submitted by customer'},{time:new Date().toLocaleString(),action:'Assigned to Engineering Review queue'}]});localStorage.otecReq=JSON.stringify(req);orderWizardStep=5;renderOrderStep()}
+function submitOrder(){let id='RFQ-'+new Date().getFullYear()+'-'+String(1001+req.length).padStart(4,'0');orderDraft.id=id;let total=orderParts.reduce((a,p)=>a+Number(p.qty||0),0);req.unshift({id,customer:customerCompany(),part:orderDraft.title,qty:total,status:'Engineering Review',date:new Date().toISOString().slice(0,10),material:orderParts.length===1?orderParts[0].material:'Multiple Materials',description:orderDraft.description,orderType:orderDraft.orderType,target:orderDraft.target,address:orderDraft.address,reference:orderDraft.reference,parts:orderParts,files:orderParts.map(p=>({name:p.name,size:p.size,type:p.type,revision:p.revision})),audit:[{time:new Date().toLocaleString(),action:'RFQ submitted by customer'},{time:new Date().toLocaleString(),action:'Assigned to Engineering Review queue'}]});localStorage.otecReq=JSON.stringify(req);orderWizardStep=5;renderOrderStep()}
 function workflowStatus(s){return s==='New'?'Submitted':s}
 function timelineHTML(status){let steps=['Submitted','Engineering Review','Quote Prepared','Customer Approval','Payment','Production','Quality Control','Dispatch','Delivered'];let map={'New':0,'Submitted':0,'Under Review':1,'Engineering Review':1,'RFQ Sent':2,'Quote Prepared':2,'Approved':3,'Customer Approval':3,'Payment':4,'Production':5,'Quality Control':6,'Dispatch':7,'Delivered':8};let cur=map[status]??0;return steps.map((x,i)=>`<div class="tl-step ${i<cur?'done':i===cur?'current':''}"><div class="tl-dot">${i<cur?'✓':i+1}</div>${x}</div>`).join('')}
 function setStatus(id,s){let r=req.find(x=>x.id===id);if(r){r.status=s;r.audit=r.audit||[];r.audit.unshift({time:new Date().toLocaleString(),action:'Status changed to '+s})}localStorage.otecReq=JSON.stringify(req);requestsPage()}
@@ -292,8 +380,15 @@ function regBack(){if(registrationStep>1){registrationStep--;showRegStep()}}
 function validateReg(){if(registrationStep===1){if(!rName.value.trim()||!rMobile.value.trim()||!rEmail.value.trim()||!rPass.value){alert("Please complete all required personal fields.");return false}if(rPass.value.length<6){alert("Password must be at least 6 characters.");return false}if(rPass.value!==rPass2.value){alert("Passwords do not match.");return false}}if(registrationStep===2&&(!rCompany.value.trim()||!rCommercialNo.value.trim()||!rTaxNo.value.trim()||!rAddress.value.trim())){alert("Please complete all required company fields.");return false}if(registrationStep===3&&(!rCommercialFile.files[0]||!rTaxFile.files[0])){alert("Please upload both company documents.");return false}if(registrationStep===4&&!rConsent.checked){alert("Please confirm the supplied information.");return false}return true}
 function regFile(type){let f=type==="commercial"?rCommercialFile.files[0]:rTaxFile.files[0];(type==="commercial"?commercialFileName:taxFileName).textContent=f?"✓ "+f.name:""}
 function buildRegReview(){regReview.innerHTML=`<div class="review-box"><h4>Personal Information</h4><div class="rline"><span>Name</span><b>${rName.value||"-"}</b></div><div class="rline"><span>Email</span><b>${rEmail.value||"-"}</b></div><div class="rline"><span>Mobile</span><b>${rMobile.value||"-"}</b></div><div class="rline"><span>Job Title</span><b>${rJob.value||"-"}</b></div></div><div class="review-box"><h4>Company Information</h4><div class="rline"><span>Company</span><b>${rCompany.value||"-"}</b></div><div class="rline"><span>Trade Name</span><b>${rTrade.value||"-"}</b></div><div class="rline"><span>Commercial No.</span><b>${rCommercialNo.value||"-"}</b></div><div class="rline"><span>Tax No.</span><b>${rTaxNo.value||"-"}</b></div></div><div class="review-box"><h4>Address</h4><div class="rline"><span>Activity</span><b>${rActivity.value||"-"}</b></div><div class="rline"><span>Region</span><b>${rRegion.value||"-"}</b></div><div class="rline"><span>Address</span><b>${rAddress.value||"-"}</b></div></div><div class="review-box"><h4>Documents</h4><div class="rline"><span>Commercial Register</span><b>${rCommercialFile.files[0]?.name||"-"}</b></div><div class="rline"><span>Tax Card</span><b>${rTaxFile.files[0]?.name||"-"}</b></div><div class="rline"><span>Status</span><b>Pending Verification</b></div></div>`}
-function saveRegistration(){companyProfile={companyName:rCompany.value,tradeName:rTrade.value,commercialNo:rCommercialNo.value,taxNo:rTaxNo.value,address:rAddress.value,activity:rActivity.value,region:rRegion.value,status:"Pending Verification",commercialFile:rCommercialFile.files[0].name,taxFile:rTaxFile.files[0].name,contactName:rName.value,email:rEmail.value,mobile:rMobile.value,jobTitle:rJob.value};localStorage.otecCompany=JSON.stringify(companyProfile);registrationStep=5;showRegStep()}
-function finishRegistration(){registration.classList.add("hide");doLogin();go("companyProfile")}
+function saveRegistration(){
+  companyProfile={companyName:rCompany.value.trim(),tradeName:rTrade.value.trim(),commercialNo:rCommercialNo.value.trim(),taxNo:rTaxNo.value.trim(),address:rAddress.value.trim(),activity:rActivity.value.trim(),region:rRegion.value.trim(),status:"Pending Verification",commercialFile:rCommercialFile.files[0].name,taxFile:rTaxFile.files[0].name,contactName:rName.value.trim(),email:rEmail.value.trim().toLowerCase(),mobile:rMobile.value.trim(),jobTitle:rJob.value.trim()};
+  const email=companyProfile.email;const existing=customerAccounts.findIndex(a=>(a.email||"").toLowerCase()===email);
+  const account={email,password:rPass.value,profile:{...companyProfile}};
+  if(existing>=0)customerAccounts[existing]=account;else customerAccounts.push(account);
+  saveCustomerAccounts();activeCustomerEmail=email;localStorage.otecActiveCustomerEmail=email;localStorage.otecCompany=JSON.stringify(companyProfile);
+  registrationStep=5;showRegStep()
+}
+function finishRegistration(){registration.classList.add("hide");loginEmail.value=companyProfile.email||"";loginPassword.value=rPass.value||"";doLogin();go("companyProfile")}
 function companyProfilePage(){content.innerHTML=`<div class="head"><div><h2>${T("companyProfile")}</h2><p>Customer company registration and verification documents</p></div></div><div class="grid g2"><div class="card"><h3>${T("companyData")}</h3><p><b>Company Name:</b> ${companyProfile.companyName||"-"}</p><p><b>Trade Name:</b> ${companyProfile.tradeName||"-"}</p><p><b>Commercial Register No.:</b> ${companyProfile.commercialNo||"-"}</p><p><b>Tax Registration No.:</b> ${companyProfile.taxNo||"-"}</p><p><b>Address:</b> ${companyProfile.address||"-"}</p><p><b>Activity:</b> ${companyProfile.activity||"-"}</p></div><div class="card"><h3>${T("accountStatus")}</h3><div class="statusbox"><b>${T("pendingVerification")}</b><p class="mut">OTEC administration will review the company documents before final account approval.</p></div><h4>Uploaded Documents</h4><div class="upload-list"><div class="upload-item"><span>📄 ${T("commercialRegister")}</span><span>${companyProfile.commercialFile||"Not uploaded"}</span></div><div class="upload-item"><span>📄 ${T("taxCard")}</span><span>${companyProfile.taxFile||"Not uploaded"}</span></div></div><button class="btn light" style="margin-top:14px" onclick="openRegister()">Edit / Re-upload Documents</button></div></div>`}
 
 applyLang();
@@ -321,5 +416,52 @@ applyLang();
 })();
 </script>
 
+
+<script>
+(function(){
+  function setupTableSlider(box){
+    if(!box || box.dataset.sliderReady==='1') return;
+    box.dataset.sliderReady='1';
+
+    var control=document.createElement('div');
+    control.className='mobile-scroll-control';
+    control.innerHTML='<span>↔ حرّك الجدول</span><input class="mobile-scroll-range" type="range" min="0" max="100" value="0" aria-label="Horizontal table position">';
+    box.insertAdjacentElement('afterend',control);
+    var range=control.querySelector('input');
+    var syncing=false;
+
+    function maxScroll(){return Math.max(0,box.scrollWidth-box.clientWidth)}
+    function refresh(){
+      var max=maxScroll();
+      control.classList.toggle('is-hidden',window.innerWidth>720 || max<3);
+      if(!syncing) range.value=max?Math.round((box.scrollLeft/max)*100):0;
+    }
+    range.addEventListener('input',function(){
+      var max=maxScroll(); syncing=true;
+      box.scrollLeft=max*(Number(range.value)/100);
+      requestAnimationFrame(function(){syncing=false});
+    });
+    box.addEventListener('scroll',function(){
+      if(syncing) return;
+      var max=maxScroll();
+      range.value=max?Math.round((box.scrollLeft/max)*100):0;
+    },{passive:true});
+    window.addEventListener('resize',refresh,{passive:true});
+    setTimeout(refresh,0);
+    setTimeout(refresh,250);
+  }
+
+  function setupAll(root){
+    (root||document).querySelectorAll('.table').forEach(setupTableSlider);
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    setupAll(document);
+    var target=document.getElementById('content')||document.body;
+    new MutationObserver(function(){setupAll(target)}).observe(target,{childList:true,subtree:true});
+    var modal=document.getElementById('modal');
+    if(modal) new MutationObserver(function(){setupAll(modal)}).observe(modal,{childList:true,subtree:true});
+  });
+})();
+</script>
 </body>
 </html>
