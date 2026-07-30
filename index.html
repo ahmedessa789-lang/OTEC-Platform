@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>OTEC Manufacturing Platform V5.8 Mobile Menu Auto Close</title>
+<title>OTEC Manufacturing Platform V6.0 Mobile Menu Outside Tap Fix</title>
 <style>
 :root{--p:#123f6d;--p2:#1f6fa8;--bg:#f4f7fb;--card:#fff;--txt:#1d2735;--mut:#6d7885;--bd:#dce4ec;--ok:#198754;--warn:#c27a00;--bad:#b53a30}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--txt)}
@@ -234,6 +234,27 @@ main,.main,.content,.app>div{min-width:0}
   [dir="rtl"] body:not(.menu-open) .side{transform:translateX(105%)!important}
 }
 
+
+/* V6.0 — Mobile drawer closes when tapping anywhere outside it */
+@media(max-width:720px){
+  .side-backdrop{
+    display:block!important;
+    position:fixed!important;
+    inset:0!important;
+    z-index:35!important;
+    background:rgba(4,18,32,.46)!important;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+  .side-backdrop.show{
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+  }
+  .side{z-index:40!important}
+}
+
 </style>
 </head>
 <body>
@@ -390,6 +411,15 @@ function finishRegistration(){registration.classList.add("hide");loginEmail.valu
 function companyProfilePage(){content.innerHTML=`<div class="head"><div><h2>${T("companyProfile")}</h2><p>Customer company registration and verification documents</p></div></div><div class="grid g2"><div class="card"><h3>${T("companyData")}</h3><p><b>Company Name:</b> ${companyProfile.companyName||"-"}</p><p><b>Trade Name:</b> ${companyProfile.tradeName||"-"}</p><p><b>Commercial Register No.:</b> ${companyProfile.commercialNo||"-"}</p><p><b>Tax Registration No.:</b> ${companyProfile.taxNo||"-"}</p><p><b>Address:</b> ${companyProfile.address||"-"}</p><p><b>Activity:</b> ${companyProfile.activity||"-"}</p></div><div class="card"><h3>${T("accountStatus")}</h3><div class="statusbox"><b>${T("pendingVerification")}</b><p class="mut">OTEC administration will review the company documents before final account approval.</p></div><h4>Uploaded Documents</h4><div class="upload-list"><div class="upload-item"><span>📄 ${T("commercialRegister")}</span><span>${companyProfile.commercialFile||"Not uploaded"}</span></div><div class="upload-item"><span>📄 ${T("taxCard")}</span><span>${companyProfile.taxFile||"Not uploaded"}</span></div></div><button class="btn light" style="margin-top:14px" onclick="openRegister()">Edit / Re-upload Documents</button></div></div>`}
 
 applyLang();
+
+// V6.0: reliably close the mobile drawer when the user taps the page outside it.
+document.addEventListener("pointerdown", function(e){
+  if(window.innerWidth > 720 || !side.classList.contains("open")) return;
+  const menuButton = e.target.closest(".menu");
+  if(menuButton || side.contains(e.target)) return;
+  closeSide();
+}, true);
+
 </script>
 
 <script>
