@@ -293,6 +293,30 @@ main,.main,.content,.app>div{min-width:0}
   .side{visibility:visible!important;transform:none!important}
 }
 
+/* V6.2 — definitive mobile drawer visibility fix. Overrides legacy menu-open rules. */
+@media (max-width:720px){
+  body.drawer-open .side.open,
+  html.drawer-open body .side.open{
+    transform:translate3d(0,0,0)!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+  [dir="rtl"] body.drawer-open .side.open,
+  [dir="rtl"] html.drawer-open body .side.open{
+    transform:translate3d(0,0,0)!important;
+  }
+  body:not(.drawer-open) .side{
+    pointer-events:none!important;
+  }
+  body.drawer-open .drawer-backdrop.show{
+    display:block!important;
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+  }
+}
+
 </style>
 </head>
 <body>
