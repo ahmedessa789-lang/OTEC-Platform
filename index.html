@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>OTEC Manufacturing Platform — Live Portal V12</title>
+<title>OTEC Manufacturing Platform — Live Portal V13</title>
 <style>
 :root{--p:#123f6d;--p2:#1f6fa8;--bg:#f4f7fb;--card:#fff;--txt:#1d2735;--mut:#6d7885;--bd:#dce4ec;--ok:#198754;--warn:#c27a00;--bad:#b53a30}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--txt)}
@@ -691,12 +691,19 @@ quotesPage=async function(){
   }
 }
 function customerOpenQuotation(id){
- const q=dbQuotes.find(x=>x.id===id);if(!q)return;
- const items=q.quotation_items||[];
- modal.innerHTML=`<div class="modalbox"><div class="head"><div><h2>${esc(q.quotation_number||'Quotation')}</h2><p>Request ${esc(q.request_number||'-')} · Issued ${isoDate(q.created_at)}</p></div><button class="iconbtn" onclick="closeModal()">✕</button></div><div class="quote-status-note"><b>Status:</b> ${badge(q.status||'Sent')} &nbsp; <b>Valid until:</b> ${esc(q.valid_until||'-')} &nbsp; <b>Lead time:</b> ${esc(q.lead_time_days||'-')} days</div><div class="table"><table><thead><tr><th>Description</th><th>Quantity</th><th>Unit Price</th><th>Total</th></tr></thead><tbody>${items.map(i=>`<tr><td>${esc(i.description)}</td><td>${Number(i.quantity||0).toLocaleString()}</td><td>${Number(i.unit_price||0).toLocaleString()} ${esc(q.currency||'EGP')}</td><td>${Number(i.total_price||0).toLocaleString()} ${esc(q.currency||'EGP')}</td></tr>`).join('')||'<tr><td colspan="4">No quotation items.</td></tr>'}</tbody></table></div><div class="quote-total-box"><div class="quote-total-row"><span>Subtotal</span><b>${Number(q.subtotal||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div><div class="quote-total-row"><span>Tax</span><b>${Number(q.tax_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div><div class="quote-total-row grand"><span>Total</span><b>${Number(q.total_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div></div>${q.customer_notes?`<div class="card" style="margin-top:12px"><b>Commercial Notes</b><p>${esc(q.customer_notes)}</p></div>`:''}<div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button></div></div>`;
+ const q=(dbQuotes||[]).find(x=>x.id===id);if(!q)return;
+ const items=q.quotation_items||[],status=(q.status||'Sent'),canDecide=['sent','published','awaiting customer approval'].includes(status.toLowerCase());
+ const decisionBox=canDecide?`<div class="customer-decision-box"><h3>Confirm Quotation</h3><p>Please review all prices, lead time and commercial terms before confirming.</p><label>Comment (optional)<textarea id="customerQuoteDecisionNote" rows="3" placeholder="Add a note for OTEC"></textarea></label><div class="customer-decision-actions"><button class="btn success" onclick="customerDecideQuotation('${q.id}','Accepted')">✓ Accept Quotation</button><button class="btn danger" onclick="customerDecideQuotation('${q.id}','Declined')">✕ Decline / Request New Quote</button></div><div class="decision-note">Your decision will be recorded with your account, date and time.</div></div>`:`<div class="customer-decision-box"><h3>Customer Decision</h3><p>${status.toLowerCase()==='accepted'?'This quotation has been accepted.':status.toLowerCase()==='declined'?'This quotation was declined. OTEC can prepare a revised quotation.':'Current status: '+esc(status)}</p></div>`;
+ modal.innerHTML=`<div class="modalbox"><div class="head"><div><h2>${esc(q.quotation_number||'Quotation')}</h2><p>Request ${esc(q.request_number||'-')} · Issued ${isoDate(q.created_at)}</p></div><button class="iconbtn" onclick="closeModal()">✕</button></div><div class="quote-status-note"><b>Status:</b> ${badge(status)} &nbsp; <b>Valid until:</b> ${esc(q.valid_until||'-')} &nbsp; <b>Lead time:</b> ${esc(q.lead_time_days||'-')} days</div><div class="table"><table><thead><tr><th>Description</th><th>Quantity</th><th>Unit Price</th><th>Total</th></tr></thead><tbody>${items.map(i=>`<tr><td>${esc(i.description)}</td><td>${Number(i.quantity||0).toLocaleString()}</td><td>${Number(i.unit_price||0).toLocaleString()} ${esc(q.currency||'EGP')}</td><td>${Number(i.total_price||0).toLocaleString()} ${esc(q.currency||'EGP')}</td></tr>`).join('')||'<tr><td colspan="4">No quotation items.</td></tr>'}</tbody></table></div><div class="quote-total-box"><div class="quote-total-row"><span>Subtotal</span><b>${Number(q.subtotal||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div><div class="quote-total-row"><span>Tax</span><b>${Number(q.tax_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div><div class="quote-total-row grand"><span>Total</span><b>${Number(q.total_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div></div>${q.customer_notes?`<div class="card" style="margin-top:12px"><b>Commercial Notes</b><p>${esc(q.customer_notes)}</p></div>`:''}${decisionBox}<div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button></div></div>`;
  modal.classList.remove('hide');
 }
-
+async function customerDecideQuotation(quotationId,decision){
+ if(!['Accepted','Declined'].includes(decision))return;
+ const verb=decision==='Accepted'?'accept':'decline';if(!confirm(`Are you sure you want to ${verb} this quotation?`))return;
+ const note=document.getElementById('customerQuoteDecisionNote')?.value.trim()||null;
+ try{setBusy(true,`${decision==='Accepted'?'Confirming':'Sending'} your quotation decision…`);const {data,error}=await sb.rpc('customer_decide_quotation',{p_quotation_id:quotationId,p_decision:decision,p_note:note});if(error)throw error;await refreshCustomerLiveData();closeModal();showLiveToast('Quotation decision saved',decision==='Accepted'?'Quotation accepted successfully.':'Quotation declined and OTEC has been notified.');if(current==='quotes')await quotesPage();else if(current==='requests')await requestsPage();}
+ catch(e){alert(e.message||'Unable to save your quotation decision.');}finally{setBusy(false)}
+}
 function analyticsPage(){
   const statuses={};const materials={};const types={};const months={};let totalQty=0;
   req.forEach(r=>{statuses[r.status]=(statuses[r.status]||0)+1;types[r.orderType||'Not specified']=(types[r.orderType||'Not specified']||0)+1;totalQty+=Number(r.qty||0);const m=(r.date||'').slice(0,7)||'Unknown';months[m]=(months[m]||0)+1;(r.parts||[]).forEach(p=>{if(p.material)materials[p.material]=(materials[p.material]||0)+Number(p.qty||0)})});
@@ -860,7 +867,7 @@ async function engineerOpenClient(id){
 </style>
 <script>
 /* =========================================================
-   OTEC V10 — Customer success confirmations + live workflow
+   OTEC V13 — Live quotation decisions and synchronized request status
    ========================================================= */
 let requestHistories=[];
 function ensureToastStack(){let x=document.getElementById('toastStack');if(!x){x=document.createElement('div');x.id='toastStack';x.className='toast-stack';document.body.appendChild(x)}return x}
@@ -870,8 +877,9 @@ function customerStatusInfo(status){
  if(['new','submitted'].includes(s))return {text:'Your request was submitted successfully and is waiting for an OTEC engineer.',cls:'success'};
  if(['engineering review','under review'].includes(s))return {text:'Your request is under review by the OTEC engineering team.',cls:''};
  if(s.includes('clarification'))return {text:'OTEC needs additional clarification. Please review the latest note.',cls:'warn'};
- if(['rfq sent','quote prepared','quotation ready'].includes(s))return {text:'Your quotation is ready for review.',cls:'success'};
- if(['approved','customer approval'].includes(s))return {text:'The quotation has been approved and the order is moving forward.',cls:'success'};
+ if(['rfq sent','quote prepared','quotation ready','quotation sent','sent','awaiting customer approval'].includes(s))return {text:'Your quotation is ready. Please open it and confirm your decision.',cls:'success'};
+ if(['approved','customer approval','quotation accepted','accepted'].includes(s))return {text:'You approved the quotation. OTEC can now proceed with the next commercial step.',cls:'success'};
+ if(['quotation declined','declined'].includes(s))return {text:'You declined the quotation. OTEC has been notified and may issue a revised quotation.',cls:'warn'};
  if(s.includes('payment'))return {text:'The request is waiting for payment confirmation.',cls:'warn'};
  if(['production','in production'].includes(s))return {text:'Your project is currently in production.',cls:''};
  if(['quality control','qc inspection'].includes(s))return {text:'Your project is undergoing quality inspection.',cls:''};
@@ -884,8 +892,9 @@ function trackingStage(status){
  const s=(status||'Submitted').toLowerCase();
  if(['new','submitted'].includes(s))return 0;
  if(['engineering review','under review'].includes(s)||s.includes('clarification'))return 1;
- if(['rfq sent','quote prepared','quotation ready'].includes(s))return 2;
- if(['approved','customer approval'].includes(s))return 3;
+ if(['rfq sent','quote prepared','quotation ready','quotation sent','sent','awaiting customer approval'].includes(s))return 2;
+ if(['approved','customer approval','quotation accepted','accepted'].includes(s))return 3;
+ if(['quotation declined','declined'].includes(s))return 2;
  if(s.includes('payment'))return 4;
  if(['production','in production'].includes(s))return 5;
  if(['quality control','qc inspection'].includes(s))return 6;
@@ -895,6 +904,8 @@ function trackingStage(status){
 }
 function compactTimeline(status){const labels=['Submitted','Under Review','Quotation','Approved','Payment','Production','Quality','Dispatch','Delivered'],cur=trackingStage(status);return `<div class="compact-timeline">${labels.map((x,i)=>`<div class="ct-step ${i<cur?'done':i===cur?'current':''}"><span class="ct-dot">${i<cur?'✓':i+1}</span>${x}</div>`).join('')}</div>`}
 function requestHistoryFor(uuid){return requestHistories.filter(h=>h.request_id===uuid).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))}
+function latestQuoteForCustomerRequest(requestId){return (dbQuotes||[]).filter(q=>q.request_id===requestId).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]||null}
+function effectiveCustomerRequestStatus(r){const q=latestQuoteForCustomerRequest(r.uuid);if(!q)return r.status;const qs=(q.status||'').toLowerCase();if(['accepted','approved'].includes(qs))return 'Quotation Accepted';if(['declined','rejected'].includes(qs))return 'Quotation Declined';if(['sent','published','awaiting customer approval'].includes(qs)&&!['quotation accepted','accepted','payment','production','in production','quality control','dispatch','delivered','closed'].includes((r.status||'').toLowerCase()))return 'Quotation Sent';return r.status}
 
 const _v10LoadPortalData=loadPortalData;
 loadPortalData=async function(){
@@ -945,8 +956,8 @@ requestsPage=async function(){
  content.innerHTML=`<div class="head"><div><h2>${T('requests')}</h2><p>Loading the latest verified workflow updates…</p></div><span class="connection-pill">● Syncing</span></div><div class="card"><div class="empty-state">Checking Supabase…</div></div>`;
  try{await refreshCustomerLiveData()}catch(e){console.error(e);showLiveToast('Live update failed',e.message||'Unable to refresh requests.');}
  const d=customerRequests();
- const cards=d.map(r=>{const info=customerStatusInfo(r.status),hist=requestHistoryFor(r.uuid),last=hist.length?new Date(hist[hist.length-1].created_at).toLocaleString():r.date;return `<article class="request-track-card"><div class="request-track-head"><div><div class="request-track-meta">${esc(r.id)} · ${esc(r.orderType||'Manufacturing Request')}</div><h3>${esc(r.part)}</h3><div class="request-track-meta">Required delivery: ${esc(r.target||'-')} · Total quantity: ${Number(r.qty||0).toLocaleString()}</div></div>${badge(r.status)}</div><div class="customer-status-message ${info.cls}">${esc(info.text)}</div>${compactTimeline(r.status)}<div class="request-actions-row"><span class="last-update">Last update: ${esc(last)}</span><button class="btn secondary" onclick="viewReq('${r.id}')">View Full Details</button></div></article>`}).join('')||'<div class="empty-state">No manufacturing requests have been submitted yet.</div>';
- content.innerHTML=`<div class="head"><div><h2>${T('requests')}</h2><p>Live progress and verified updates for every request.</p></div><button class="btn primary" onclick="newReq()">+ ${T('newRequest')}</button></div><div>${cards}</div>`;
+ const cards=d.map(r=>{const displayStatus=effectiveCustomerRequestStatus(r),info=customerStatusInfo(displayStatus),hist=requestHistoryFor(r.uuid),last=hist.length?new Date(hist[hist.length-1].created_at).toLocaleString():r.date;return `<article class="request-track-card"><div class="request-track-head"><div><div class="request-track-meta">${esc(r.id)} · ${esc(r.orderType||'Manufacturing Request')}</div><h3>${esc(r.part)}</h3><div class="request-track-meta">Required delivery: ${esc(r.target||'-')} · Total quantity: ${Number(r.qty||0).toLocaleString()}</div></div>${badge(displayStatus)}</div><div class="customer-status-message ${info.cls}">${esc(info.text)}</div>${compactTimeline(displayStatus)}<div class="request-actions-row"><span class="last-update">Last update: ${esc(last)}</span><button class="btn secondary" onclick="viewReq('${r.id}')">View Full Details</button></div></article>`}).join('')||'<div class="empty-state">No manufacturing requests have been submitted yet.</div>';
+ content.innerHTML=`<div class="head"><div><h2>${T('requests')}</h2><p>Live progress and verified updates for every request.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini light" onclick="requestsPage()">↻ Refresh</button><button class="btn primary" onclick="newReq()">+ ${T('newRequest')}</button></div></div><div>${cards}</div>`;
 }
 
 async function engineerStartReview(requestId,detailsEl){
@@ -970,11 +981,11 @@ let v10Polling=false,v10LastStatuses={};
 async function pollCustomerStatuses(){
  if(v10Polling||!authUser||isInternalRole()||app.classList.contains('hide'))return;v10Polling=true;
  try{
-  const beforeStatus=Object.fromEntries(req.map(r=>[r.uuid,r.status])),beforeQuotes=new Set((dbQuotes||[]).map(q=>q.id));
+  const beforeStatus=Object.fromEntries(req.map(r=>[r.uuid,effectiveCustomerRequestStatus(r)])),beforeQuotes=new Set((dbQuotes||[]).map(q=>q.id));
   await refreshCustomerLiveData();
-  const changed=req.filter(r=>beforeStatus[r.uuid]&&beforeStatus[r.uuid]!==r.status);
+  const changed=req.filter(r=>beforeStatus[r.uuid]&&beforeStatus[r.uuid]!==effectiveCustomerRequestStatus(r));
   const newQuotes=(dbQuotes||[]).filter(q=>!beforeQuotes.has(q.id));
-  changed.forEach(r=>showLiveToast('Request status updated',`${r.id}: ${customerStatusInfo(r.status).text}`));
+  changed.forEach(r=>{const st=effectiveCustomerRequestStatus(r);showLiveToast('Request status updated',`${r.id}: ${customerStatusInfo(st).text}`)});
   newQuotes.forEach(q=>showLiveToast('New quotation received',`${q.quotation_number||'Quotation'} is ready for review.`));
   if(changed.length||newQuotes.length){if(current==='requests')await requestsPage();else if(current==='quotes')await quotesPage();else if(current==='dashboard')dash()}
  }catch(e){console.warn('Live polling:',e)}finally{v10Polling=false}
@@ -986,6 +997,8 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 
 <style>
 .quote-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.quote-items{display:grid;gap:10px}.quote-item{display:grid;grid-template-columns:minmax(180px,1.7fr) 110px 140px 140px;gap:10px;align-items:end;border:1px solid #dce6ee;border-radius:14px;padding:12px;background:#f8fbfd}.quote-total-box{margin-top:14px;margin-left:auto;max-width:430px;border:1px solid #d8e5ed;border-radius:15px;padding:14px;background:#f7fafc}.quote-total-row{display:flex;justify-content:space-between;gap:18px;padding:7px 0}.quote-total-row.grand{border-top:1px solid #cfdce5;margin-top:5px;padding-top:12px;font-size:19px}.request-action-stack{display:flex;gap:6px;flex-wrap:wrap}.approval-panel{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #e3ebf0}.quote-status-note{padding:12px;border-radius:12px;background:#eef7ff;border:1px solid #cfe2f3;color:#164f7e;margin-bottom:12px}@media(max-width:760px){.quote-modal-grid{grid-template-columns:1fr}.quote-item{grid-template-columns:1fr 1fr}.quote-item .quote-description{grid-column:1/-1}.request-action-stack .mini{flex:1 1 145px}.quote-total-box{max-width:none;margin-left:0}}
+
+.customer-decision-box{margin-top:16px;padding:16px;border:1px solid #d7e4ec;border-radius:15px;background:#f8fbfd}.customer-decision-box h3{margin:0 0 6px}.customer-decision-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.customer-decision-actions .btn{flex:1 1 180px}.decision-note{margin-top:10px;color:#667586;font-size:13px}
 </style>
 <script>
 /* OTEC V11 — Owner Request Approval & Quotation Workflow */
