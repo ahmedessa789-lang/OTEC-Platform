@@ -1077,7 +1077,21 @@ async function saveOwnerQuotation(requestId){
  }catch(e){alert(e.message||'Unable to create quotation.')}finally{setBusy(false)}
 }
 engineerRequestsPage=function(){
- const rows=engineerRequests.map(r=>{const c=reqCompany(r),q=quoteForRequest(r.id);return `<tr><td><b>${esc(r.request_number)}</b></td><td>${esc(c?.company_name||'-')}</td><td>${esc(r.project_name)}</td><td>${esc(r.order_type)}</td><td>${(r.request_parts||[]).length}</td><td>${badge(r.status)}</td><td>${q?`${esc(q.quotation_number)}<br>${Number(q.total_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}`:'Not created'}</td><td><div class="request-action-stack"><button class="mini light" onclick="engineerOpenRequest('${r.id}')">Open</button><button class="mini success" onclick="ownerApproveRequest('${r.id}')">Approve</button><button class="mini primary" onclick="ownerCreateQuotation('${r.id}')">${q?'New Quote Revision':'Create Quotation'}</button><button class="mini danger" onclick="ownerRejectRequest('${r.id}')">Request Revision</button></div></td></tr>`}).join('')||'<tr><td colspan="8"><div class="empty-state">No requests yet.</div></td></tr>';
+ const rows=engineerRequests.map(r=>{
+  const c=reqCompany(r),q=quoteForRequest(r.id);
+  const qStatus=(q?.status||'').toLowerCase();
+  const accepted=['accepted','approved'].includes(qStatus)||['quotation accepted','accepted'].includes((r.status||'').toLowerCase());
+  const declined=['declined','rejected'].includes(qStatus)||['quotation declined','declined'].includes((r.status||'').toLowerCase());
+  let actions=`<button class="mini light" onclick="engineerOpenRequest('${r.id}')">Open</button>`;
+  if(accepted){
+   actions+=`<span class="badge approved">Customer Accepted</span>`;
+  }else if(declined){
+   actions+=`<button class="mini primary" onclick="ownerCreateQuotation('${r.id}')">Create Revised Quote</button><span class="badge rejected">Customer Declined</span>`;
+  }else{
+   actions+=`<button class="mini success" onclick="ownerApproveRequest('${r.id}')">Approve</button><button class="mini primary" onclick="ownerCreateQuotation('${r.id}')">${q?'New Quote Revision':'Create Quotation'}</button><button class="mini danger" onclick="ownerRejectRequest('${r.id}')">Request Revision</button>`;
+  }
+  return `<tr><td><b>${esc(r.request_number)}</b></td><td>${esc(c?.company_name||'-')}</td><td>${esc(r.project_name)}</td><td>${esc(r.order_type)}</td><td>${(r.request_parts||[]).length}</td><td>${badge(r.status)}</td><td>${q?`${esc(q.quotation_number)}<br>${Number(q.total_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}<br>${badge(q.status||'Sent')}`:'Not created'}</td><td><div class="request-action-stack">${actions}</div></td></tr>`
+ }).join('')||'<tr><td colspan="8"><div class="empty-state">No requests yet.</div></td></tr>';
  content.innerHTML=`<div class="head"><div><h2>Request Approval & Quotations</h2><p>Review customer files, approve technical requests and publish commercial quotations.</p></div><span class="connection-pill">● Supabase Live</span></div><div class="card"><div class="table"><table><thead><tr><th>Request</th><th>Company</th><th>Project</th><th>Type</th><th>Parts</th><th>Status</th><th>Quotation</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 </script>
