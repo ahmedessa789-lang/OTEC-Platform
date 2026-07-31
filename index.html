@@ -584,8 +584,8 @@ window.addEventListener("resize", function(){ if(window.innerWidth>720) closeSid
    OTEC V7 — Supabase connection layer
    Replace only the two public values below. Never use a secret/service key here.
    ========================================================= */
-const OTEC_SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const OTEC_SUPABASE_PUBLISHABLE_KEY = 'YOUR_SUPABASE_PUBLISHABLE_KEY';
+const OTEC_SUPABASE_URL = 'https://yoxveozndelhzkyswtcm.supabase.co';
+const OTEC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mG8rWBQkktS-RYCOxexjeQ_X2zvJa4W';
 const supabaseConfigured = !OTEC_SUPABASE_URL.includes('YOUR_') && !OTEC_SUPABASE_PUBLISHABLE_KEY.includes('YOUR_');
 const sb = supabaseConfigured ? window.supabase.createClient(OTEC_SUPABASE_URL, OTEC_SUPABASE_PUBLISHABLE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}) : null;
 let authUser=null, dbProfile=null, dbCompany=null, dbQuotes=[];
