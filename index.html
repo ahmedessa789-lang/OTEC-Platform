@@ -440,7 +440,7 @@ function renderOrderStep(){
   if(orderWizardStep===2)orderBody.innerHTML=`<div class="wizard-card"><div class="pane-title"><div class="pane-icon">📐</div><div><h3>Upload Technical Parts</h3><p>Each uploaded file becomes an independently configurable manufacturing part.</p></div></div><label class="drop-zone" for="partFiles"><div style="font-size:38px">⬆️</div><strong>Click to select multiple CAD and technical files</strong><div class="mut">DWG, DXF, STEP, STP, PDF, ZIP, JPG or PNG</div><input id="partFiles" class="hide" type="file" multiple accept=".dwg,.dxf,.step,.stp,.pdf,.zip,.jpg,.jpeg,.png" onchange="addPartFiles(this.files)"></label><div id="partsUploadList" class="part-grid" style="margin-top:14px">${partsUploadHTML()}</div><div class="secure-note" style="margin-top:14px"><span>🛡️</span><div><b>Secure engineering workspace</b><div class="mut">Files remain linked to this RFQ with revision history and controlled access.</div></div></div></div>`;
   if(orderWizardStep===3)orderBody.innerHTML=`<div class="wizard-card"><div class="pane-title"><div class="pane-icon">⚙️</div><div><h3>Configure Each Part</h3><p>Set material, thickness, quantity and finishing independently.</p></div></div><div id="partsConfig" class="part-grid">${partsConfigHTML()}</div></div>`;
   if(orderWizardStep===4)orderBody.innerHTML=`<div class="wizard-card"><div class="pane-title"><div class="pane-icon">✅</div><div><h3>Review Request</h3><p>Confirm project details and all part specifications before submission.</p></div></div>${orderReviewHTML()}<label style="display:flex;gap:9px;align-items:flex-start;margin-top:14px"><input id="orderConfirm" type="checkbox" style="width:auto;margin-top:3px"><span>I confirm that the uploaded drawings and specifications are correct and authorized for quotation.</span></label></div>`;
-  if(orderWizardStep===5)orderBody.innerHTML=`<div class="success-view"><div class="check">✓</div><h2>RFQ Submitted Successfully</h2><p>Your manufacturing request has been assigned a reference number and moved to Engineering Review.</p><div class="pending-note"><b>${orderDraft.id}</b><br>Expected initial review: within 24–48 business hours.</div><div class="timeline">${timelineHTML('Engineering Review')}</div><button class="btn primary" onclick="closeModal();requestsPage()">View Manufacturing Requests</button></div>`;
+  if(orderWizardStep===5)orderBody.innerHTML=`<div class="success-view"><div class="check">✓</div><h2>Request Submitted Successfully</h2><p>All project data and technical files were saved successfully. OTEC engineering will be notified immediately.</p><div class="pending-note"><b>${orderDraft.id}</b><br>Expected initial review: within 24–48 business hours.</div><div class="timeline">${timelineHTML('Submitted')}</div><button class="btn primary" onclick="closeModal();requestsPage()">View Manufacturing Requests</button></div>`;
 }
 function saveStepOne(){orderDraft={...orderDraft,title:opTitle.value.trim(),reference:opRef.value.trim(),orderType:opType.value,target:opDate.value,description:opDesc.value.trim(),address:opAddress.value.trim()}}
 function orderNext(){
@@ -798,7 +798,7 @@ async function engineerOpenClient(id){
  const [crUrl,taxUrl]=await Promise.all([signedUrl('company-documents',c.commercial_register_path),signedUrl('company-documents',c.tax_card_path)]);
  const fileUrls={};await Promise.all(fs.slice(0,40).map(async f=>fileUrls[f.id]=await signedUrl('technical-files',f.storage_path)));
  const userHtml=users.map(u=>`<tr><td><b>${esc(u.full_name)}</b></td><td>${esc(u.job_title||'-')}</td><td>${esc(u.mobile||'-')}</td><td>${esc(u.role)}</td><td>${isoDate(u.created_at)}</td></tr>`).join('')||'<tr><td colspan="5">No users.</td></tr>';
- const requestsHtml=rs.map(r=>{const parts=r.request_parts||[],rfiles=fs.filter(f=>f.request_id===r.id);return `<details class="request-accordion"><summary>${esc(r.request_number)} — ${esc(r.project_name)} · ${badge(r.status)}</summary><div class="request-body"><div class="info-list"><div class="info-row"><span>Order Type</span><b>${esc(r.order_type)}</b></div><div class="info-row"><span>Required Delivery</span><b>${esc(r.required_delivery_date||'-')}</b></div><div class="info-row"><span>Description</span><b>${esc(r.description||'-')}</b></div><div class="info-row"><span>Delivery Address</span><b>${esc(r.delivery_address||'-')}</b></div></div><h4>Parts & Specifications</h4><div class="parts-grid">${parts.map(p=>`<div class="part-box"><b>${esc(p.part_name)}</b><div class="meta">Material: ${esc(p.material||'-')} · Thickness: ${esc(p.thickness||'-')} · Qty: ${esc(p.quantity)} · Finish: ${esc(p.finish||'-')} · Tolerance: ${esc(p.tolerance||'-')} · Revision: ${esc(p.revision)}</div></div>`).join('')||'No parts.'}</div><h4>Technical Files / Images</h4><div class="doc-gallery">${rfiles.map(f=>{const url=fileUrls[f.id],img=(f.mime_type||'').startsWith('image/');return `<div class="doc-tile">${img&&url?`<img class="preview-img" src="${url}" alt="${esc(f.original_name)}">`:'<div style="font-size:34px">📎</div>'}<b>${esc(f.original_name)}</b><div class="meta">${fmtBytes(f.file_size)} · ${esc(f.revision)}</div>${url?`<a target="_blank" href="${url}">Open secure file</a>`:'<span class="mut">Unavailable</span>'}</div>`}).join('')||'<div class="empty-state">No files uploaded.</div>'}</div></div></details>`}).join('')||'<div class="empty-state">This customer has not submitted requests yet.</div>';
+ const requestsHtml=rs.map(r=>{const parts=r.request_parts||[],rfiles=fs.filter(f=>f.request_id===r.id);return `<details class="request-accordion" data-request-id="${r.id}" ontoggle="engineerStartReview('${r.id}',this)"><summary>${esc(r.request_number)} — ${esc(r.project_name)} · <span class="request-status-slot">${badge(r.status)}</span></summary><div class="request-body"><div class="info-list"><div class="info-row"><span>Order Type</span><b>${esc(r.order_type)}</b></div><div class="info-row"><span>Required Delivery</span><b>${esc(r.required_delivery_date||'-')}</b></div><div class="info-row"><span>Description</span><b>${esc(r.description||'-')}</b></div><div class="info-row"><span>Delivery Address</span><b>${esc(r.delivery_address||'-')}</b></div></div><h4>Parts & Specifications</h4><div class="parts-grid">${parts.map(p=>`<div class="part-box"><b>${esc(p.part_name)}</b><div class="meta">Material: ${esc(p.material||'-')} · Thickness: ${esc(p.thickness||'-')} · Qty: ${esc(p.quantity)} · Finish: ${esc(p.finish||'-')} · Tolerance: ${esc(p.tolerance||'-')} · Revision: ${esc(p.revision)}</div></div>`).join('')||'No parts.'}</div><h4>Technical Files / Images</h4><div class="doc-gallery">${rfiles.map(f=>{const url=fileUrls[f.id],img=(f.mime_type||'').startsWith('image/');return `<div class="doc-tile">${img&&url?`<img class="preview-img" src="${url}" alt="${esc(f.original_name)}">`:'<div style="font-size:34px">📎</div>'}<b>${esc(f.original_name)}</b><div class="meta">${fmtBytes(f.file_size)} · ${esc(f.revision)}</div>${url?`<a target="_blank" href="${url}">Open secure file</a>`:'<span class="mut">Unavailable</span>'}</div>`}).join('')||'<div class="empty-state">No files uploaded.</div>'}</div></div></details>`}).join('')||'<div class="empty-state">This customer has not submitted requests yet.</div>';
  modalBox.innerHTML=`<div class="head"><div><h2>${esc(c.company_name)}</h2><p>360° Customer Account & Project Record</p></div><button class="iconbtn" onclick="closeModal()">✕</button></div><div class="detail-grid"><section><div class="card"><h3>Company Information</h3><div class="info-list"><div class="info-row"><span>Trade Name</span><b>${esc(c.trade_name||'-')}</b></div><div class="info-row"><span>Commercial Register</span><b>${esc(c.commercial_register_no)}</b></div><div class="info-row"><span>Tax Registration</span><b>${esc(c.tax_registration_no)}</b></div><div class="info-row"><span>Business Activity</span><b>${esc(c.business_activity||'-')}</b></div><div class="info-row"><span>Address</span><b>${esc(c.address)}</b></div><div class="info-row"><span>Region</span><b>${esc(c.region||'-')}</b></div><div class="info-row"><span>Account Status</span><b>${badge(c.verification_status)}</b></div><div class="info-row"><span>Registered</span><b>${isoDate(c.created_at)}</b></div></div></div><div class="card" style="margin-top:12px"><h3>Company Documents</h3><div class="doc-gallery"><div class="doc-tile"><div style="font-size:34px">📄</div><b>Commercial Register</b><br>${crUrl?`<a target="_blank" href="${crUrl}">Open document</a>`:'Not uploaded'}</div><div class="doc-tile"><div style="font-size:34px">📄</div><b>Tax Card</b><br>${taxUrl?`<a target="_blank" href="${taxUrl}">Open document</a>`:'Not uploaded'}</div></div></div></section><section><div class="card"><h3>Customer Login Accounts</h3><div class="table"><table><thead><tr><th>Name</th><th>Job Title</th><th>Mobile</th><th>Role</th><th>Created</th></tr></thead><tbody>${userHtml}</tbody></table></div><p class="mut">For security, passwords are never displayed. Supabase Auth stores password hashes only.</p></div><div class="card" style="margin-top:12px"><h3>Manufacturing Projects & Requests</h3>${requestsHtml}</div><div class="card" style="margin-top:12px"><h3>Quotations</h3><div class="table"><table><thead><tr><th>Quotation</th><th>Total</th><th>Status</th><th>Date</th></tr></thead><tbody>${qs.map(q=>`<tr><td>${esc(q.quotation_number)}</td><td>${Number(q.total_amount||0).toLocaleString()} ${esc(q.currency)}</td><td>${badge(q.status)}</td><td>${isoDate(q.created_at)}</td></tr>`).join('')||'<tr><td colspan="4">No quotations.</td></tr>'}</tbody></table></div></div></section></div>`;
 }
 
@@ -806,6 +806,130 @@ async function engineerOpenClient(id){
   if(!sb)return;
   try{const {data:{session}}=await sb.auth.getSession();if(session){setBusy(true,'Restoring secure session…');await loadPortalData();await enterPortal()}}catch(e){console.error(e)}finally{setBusy(false)}
 })();
+</script>
+
+
+<style>
+/* OTEC V10 — Live request tracking */
+.toast-stack{position:fixed;right:22px;top:22px;z-index:10000;display:grid;gap:10px;max-width:min(420px,calc(100vw - 32px))}
+.live-toast{background:#fff;border:1px solid #d8e2ea;border-left:5px solid #1f9d63;border-radius:14px;padding:14px 16px;box-shadow:0 18px 45px rgba(17,43,67,.18);animation:toastIn .25s ease}
+.live-toast b{display:block;color:#172536;margin-bottom:3px}.live-toast span{color:#667586;font-size:13px}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.request-track-card{border:1px solid #dce6ee;border-radius:18px;padding:18px;background:#fff;margin-bottom:14px;box-shadow:0 8px 24px rgba(20,51,77,.05)}
+.request-track-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.request-track-head h3{margin:3px 0 4px}.request-track-meta{font-size:13px;color:#6b7887}
+.customer-status-message{margin:14px 0;padding:13px 15px;border-radius:13px;background:#edf6ff;color:#174b75;border:1px solid #cfe4f4;font-weight:700}
+.customer-status-message.success{background:#ecf8f1;color:#17613f;border-color:#cbe9d7}.customer-status-message.warn{background:#fff7e7;color:#7e5610;border-color:#f1dfb7}
+.compact-timeline{display:flex;align-items:flex-start;overflow-x:auto;padding:8px 2px 4px;scrollbar-width:thin}.compact-timeline .ct-step{min-width:135px;position:relative;padding-top:33px;color:#8894a0;font-size:12px;text-align:center}.compact-timeline .ct-step:before{content:'';position:absolute;top:13px;left:0;right:0;height:3px;background:#dce5ec}.compact-timeline .ct-step:first-child:before{left:50%}.compact-timeline .ct-step:last-child:before{right:50%}.compact-timeline .ct-dot{position:absolute;top:3px;left:50%;transform:translateX(-50%);width:23px;height:23px;border-radius:50%;display:grid;place-items:center;background:#dce5ec;color:#6d7b88;font-weight:800;z-index:1}.compact-timeline .done,.compact-timeline .current{color:#173f62;font-weight:700}.compact-timeline .done:before,.compact-timeline .current:before{background:#2b83c6}.compact-timeline .done .ct-dot{background:#1e9b62;color:#fff}.compact-timeline .current .ct-dot{background:#174c77;color:#fff;box-shadow:0 0 0 5px rgba(23,76,119,.12)}
+.request-actions-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}.last-update{font-size:12px;color:#7b8895}
+@media(max-width:720px){.toast-stack{left:16px;right:16px;top:16px}.request-track-head{display:block}.request-track-head .badge{display:inline-flex;margin-top:8px}.request-actions-row{align-items:stretch;flex-direction:column}.request-actions-row .btn{width:100%}.compact-timeline .ct-step{min-width:112px}}
+</style>
+<script>
+/* =========================================================
+   OTEC V10 — Customer success confirmations + live workflow
+   ========================================================= */
+let requestHistories=[];
+function ensureToastStack(){let x=document.getElementById('toastStack');if(!x){x=document.createElement('div');x.id='toastStack';x.className='toast-stack';document.body.appendChild(x)}return x}
+function showLiveToast(title,message){const stack=ensureToastStack(),el=document.createElement('div');el.className='live-toast';el.innerHTML=`<b>${esc(title)}</b><span>${esc(message)}</span>`;stack.appendChild(el);setTimeout(()=>el.remove(),4800)}
+function customerStatusInfo(status){
+ const s=(status||'Submitted').toLowerCase();
+ if(['new','submitted'].includes(s))return {text:'Your request was submitted successfully and is waiting for an OTEC engineer.',cls:'success'};
+ if(['engineering review','under review'].includes(s))return {text:'Your request is under review by the OTEC engineering team.',cls:''};
+ if(s.includes('clarification'))return {text:'OTEC needs additional clarification. Please review the latest note.',cls:'warn'};
+ if(['rfq sent','quote prepared','quotation ready'].includes(s))return {text:'Your quotation is ready for review.',cls:'success'};
+ if(['approved','customer approval'].includes(s))return {text:'The quotation has been approved and the order is moving forward.',cls:'success'};
+ if(s.includes('payment'))return {text:'The request is waiting for payment confirmation.',cls:'warn'};
+ if(['production','in production'].includes(s))return {text:'Your project is currently in production.',cls:''};
+ if(['quality control','qc inspection'].includes(s))return {text:'Your project is undergoing quality inspection.',cls:''};
+ if(['dispatch','ready to ship','in transit'].includes(s))return {text:'Your order is ready for dispatch or currently in transit.',cls:'success'};
+ if(['delivered','closed'].includes(s))return {text:'Your order has been delivered successfully.',cls:'success'};
+ if(s==='rejected')return {text:'The request could not proceed. Please contact OTEC for details.',cls:'warn'};
+ return {text:`Current request status: ${status}.`,cls:''};
+}
+function trackingStage(status){
+ const s=(status||'Submitted').toLowerCase();
+ if(['new','submitted'].includes(s))return 0;
+ if(['engineering review','under review'].includes(s)||s.includes('clarification'))return 1;
+ if(['rfq sent','quote prepared','quotation ready'].includes(s))return 2;
+ if(['approved','customer approval'].includes(s))return 3;
+ if(s.includes('payment'))return 4;
+ if(['production','in production'].includes(s))return 5;
+ if(['quality control','qc inspection'].includes(s))return 6;
+ if(['dispatch','ready to ship','in transit'].includes(s))return 7;
+ if(['delivered','closed'].includes(s))return 8;
+ return 0;
+}
+function compactTimeline(status){const labels=['Submitted','Under Review','Quotation','Approved','Payment','Production','Quality','Dispatch','Delivered'],cur=trackingStage(status);return `<div class="compact-timeline">${labels.map((x,i)=>`<div class="ct-step ${i<cur?'done':i===cur?'current':''}"><span class="ct-dot">${i<cur?'✓':i+1}</span>${x}</div>`).join('')}</div>`}
+function requestHistoryFor(uuid){return requestHistories.filter(h=>h.request_id===uuid).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at))}
+
+const _v10LoadPortalData=loadPortalData;
+loadPortalData=async function(){
+ const ok=await _v10LoadPortalData();
+ if(!ok||!authUser)return ok;
+ try{
+   let q=sb.from('request_status_history').select('*').order('created_at',{ascending:true});
+   if(!isInternalRole()&&dbCompany)q=q.eq('company_id',dbCompany.id);
+   const {data,error}=await q;if(error)throw error;requestHistories=data||[];
+   req.forEach(r=>{r.audit=requestHistoryFor(r.uuid).map(h=>({time:new Date(h.created_at).toLocaleString(),action:h.comment||`${h.from_status||'Start'} → ${h.to_status}`}))});
+ }catch(e){console.warn('Status history unavailable',e)}
+ return ok;
+}
+
+submitOrder=async function(){
+ if(!sb||!dbCompany||!authUser){alert('Please sign in again.');return}
+ try{
+  setBusy(true,'Saving request and uploading technical files…');
+  const {data:request,error}=await sb.from('manufacturing_requests').insert({company_id:dbCompany.id,created_by:authUser.id,project_name:orderDraft.title,internal_reference:orderDraft.reference||null,order_type:orderDraft.orderType,required_delivery_date:orderDraft.target||null,description:orderDraft.description||null,delivery_address:orderDraft.address||null,status:'Submitted'}).select().single();if(error)throw error;
+  const partRows=orderParts.map((p,i)=>({request_id:request.id,company_id:dbCompany.id,part_name:p.partName||p.name||`Part ${i+1}`,material:p.material||null,thickness:p.thickness||null,quantity:Number(p.qty||0),finish:p.finish||null,tolerance:p.tolerance||null,revision:p.revision||'R1',notes:p.notes||null,original_file_name:p.name||null}));
+  const {data:parts,error:pErr}=await sb.from('request_parts').insert(partRows).select();if(pErr)throw pErr;
+  for(let i=0;i<selectedOrderFiles.length;i++){
+   const file=selectedOrderFiles[i],part=parts[i]||parts[0];if(!file||!part)continue;
+   const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=`${dbCompany.id}/${request.id}/${part.id}/${Date.now()}-${clean}`;
+   const {error:uErr}=await sb.storage.from('technical-files').upload(path,file,{upsert:false});if(uErr)throw uErr;
+   const {error:fErr}=await sb.from('part_files').insert({company_id:dbCompany.id,request_id:request.id,part_id:part.id,storage_path:path,original_name:file.name,mime_type:file.type||null,file_size:file.size,revision:part.revision||'R1',uploaded_by:authUser.id});if(fErr)throw fErr;
+  }
+  await sb.from('request_status_history').insert({company_id:dbCompany.id,request_id:request.id,from_status:null,to_status:'Submitted',changed_by:authUser.id,comment:'Request data and technical files submitted successfully by customer.'});
+  await loadPortalData();orderDraft.id=request.request_number;orderWizardStep=5;renderOrderStep();showLiveToast('Request submitted','All request details and files were saved successfully.');
+ }catch(e){alert(e.message||'Unable to submit request.')}finally{setBusy(false)}
+}
+
+const _v10OrderNext=orderNext;
+orderNext=function(){const before=orderWizardStep;_v10OrderNext();if(orderWizardStep===before+1&&before<4){const labels=['Project details saved','Files uploaded successfully','Part specifications saved'];showLiveToast('Step completed',labels[before-1]||'Information saved successfully.')}}
+
+requestsPage=function(){
+ const d=customerRequests();
+ const cards=d.map(r=>{const info=customerStatusInfo(r.status),hist=requestHistoryFor(r.uuid),last=hist.length?new Date(hist[hist.length-1].created_at).toLocaleString():r.date;return `<article class="request-track-card"><div class="request-track-head"><div><div class="request-track-meta">${esc(r.id)} · ${esc(r.orderType||'Manufacturing Request')}</div><h3>${esc(r.part)}</h3><div class="request-track-meta">Required delivery: ${esc(r.target||'-')} · Total quantity: ${Number(r.qty||0).toLocaleString()}</div></div>${badge(r.status)}</div><div class="customer-status-message ${info.cls}">${esc(info.text)}</div>${compactTimeline(r.status)}<div class="request-actions-row"><span class="last-update">Last update: ${esc(last)}</span><button class="btn secondary" onclick="viewReq('${r.id}')">View Full Details</button></div></article>`}).join('')||'<div class="empty-state">No manufacturing requests have been submitted yet.</div>';
+ content.innerHTML=`<div class="head"><div><h2>${T('requests')}</h2><p>Live progress and verified updates for every request.</p></div><button class="btn primary" onclick="newReq()">+ ${T('newRequest')}</button></div><div>${cards}</div>`;
+}
+
+async function engineerStartReview(requestId,detailsEl){
+ if(detailsEl&&!detailsEl.open)return;
+ const r=engineerRequests.find(x=>x.id===requestId);if(!r)return;
+ if(!['Submitted','New','Engineering Review'].includes(r.status))return;
+ const from=r.status;
+ try{
+  const {error}=await sb.from('manufacturing_requests').update({status:'Under Review'}).eq('id',requestId);if(error)throw error;
+  await sb.from('request_status_history').insert({company_id:r.company_id,request_id:r.id,from_status:from,to_status:'Under Review',changed_by:authUser.id,comment:'OTEC engineer opened the request and started the technical review.'});
+  r.status='Under Review';const slot=detailsEl?.querySelector('.request-status-slot');if(slot)slot.innerHTML=badge('Under Review');showLiveToast('Review started',`${r.request_number} is now Under Review.`);
+ }catch(e){console.error(e);showLiveToast('Unable to update status',e.message||'Please try again.')}
+}
+function engineerOpenRequest(requestId){const r=engineerRequests.find(x=>x.id===requestId);if(!r)return;engineerOpenClient(r.company_id);setTimeout(()=>{const d=document.querySelector(`details[data-request-id="${requestId}"]`);if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'})}},350)}
+engineerRequestsPage=function(){
+ const rows=engineerRequests.map(r=>{const c=engineerCompanies.find(x=>x.id===r.company_id);return `<tr><td><b>${esc(r.request_number)}</b></td><td>${esc(c?.company_name)}</td><td>${esc(r.project_name)}</td><td>${esc(r.order_type)}</td><td>${(r.request_parts||[]).length}</td><td>${badge(r.status)}</td><td>${isoDate(r.created_at)}</td><td><button class="mini primary" onclick="engineerOpenRequest('${r.id}')">Open Request</button></td></tr>`}).join('')||'<tr><td colspan="8"><div class="empty-state">No requests yet.</div></td></tr>';
+ content.innerHTML=`<div class="head"><div><h2>All Manufacturing Requests</h2><p>Opening a new request automatically starts its engineering review and updates the customer portal.</p></div><span class="connection-pill">● Supabase Live</span></div><div class="card"><div class="table"><table><thead><tr><th>Request</th><th>Company</th><th>Project</th><th>Type</th><th>Parts</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+let v10Polling=false,v10LastStatuses={};
+async function pollCustomerStatuses(){
+ if(v10Polling||!authUser||isInternalRole()||app.classList.contains('hide'))return;v10Polling=true;
+ try{
+  const before=Object.fromEntries(req.map(r=>[r.uuid,r.status]));await loadPortalData();
+  const changed=req.filter(r=>before[r.uuid]&&before[r.uuid]!==r.status);
+  changed.forEach(r=>showLiveToast('Request status updated',`${r.id}: ${customerStatusInfo(r.status).text}`));
+  if(changed.length){if(current==='requests')requestsPage();else if(current==='dashboard')dash()}
+ }catch(e){console.warn(e)}finally{v10Polling=false}
+}
+setInterval(pollCustomerStatuses,12000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pollCustomerStatuses()});
 </script>
 
 </body>
