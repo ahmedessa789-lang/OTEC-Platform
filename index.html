@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<title>OTEC Manufacturing Platform — Live Portal</title>
+<title>OTEC Manufacturing Platform — Live Portal V12</title>
 <style>
 :root{--p:#123f6d;--p2:#1f6fa8;--bg:#f4f7fb;--card:#fff;--txt:#1d2735;--mut:#6d7885;--bd:#dce4ec;--ok:#198754;--warn:#c27a00;--bad:#b53a30}
 *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--txt)}
@@ -671,9 +671,30 @@ setStatus=async function(id,status){
   try{setBusy(true,'Updating workflow…');const {error}=await sb.from('manufacturing_requests').update({status}).eq('id',row.uuid);if(error)throw error;await loadPortalData();requestsPage()}catch(e){alert(e.message)}finally{setBusy(false)}
 }
 
-quotesPage=function(){
-  const body=dbQuotes.length?dbQuotes.map(q=>`<tr><td><b>${safe(q.quotation_number)}</b></td><td>${safe(q.request_number||'-')}</td><td>${Number(q.total_amount||0).toLocaleString()} ${safe(q.currency||'EGP')}</td><td>${safe(q.lead_time_days||'-')} days</td><td>${badge(q.status||'Draft')}</td><td>${isoDate(q.created_at)}</td></tr>`).join(''):`<tr><td colspan="6"><div class="empty-state">No quotations have been issued for your company yet.</div></td></tr>`;
-  content.innerHTML=`<div class="head"><div><h2>${T('quotes')}</h2><p>All quotations issued to ${customerCompany()}</p></div><span class="connection-pill">● Supabase Live</span></div><div class="card"><div class="table"><table><thead><tr><th>Quotation</th><th>Request</th><th>Total</th><th>Lead Time</th><th>Status</th><th>Date</th></tr></thead><tbody>${body}</tbody></table></div></div>`
+quotesPage=async function(){
+  content.innerHTML=`<div class="head"><div><h2>${T('quotes')}</h2><p>All quotations issued to ${customerCompany()}</p></div><span class="connection-pill">● Loading latest data…</span></div><div class="card"><div class="empty-state">Checking Supabase for newly issued quotations…</div></div>`;
+  try{
+    if(!sb||!dbCompany) throw new Error('Your session is not ready. Please sign in again.');
+    const {data,error}=await sb.from('quotations').select('*').eq('company_id',dbCompany.id).order('created_at',{ascending:false});
+    if(error) throw error;
+    dbQuotes=data||[];
+    if(dbQuotes.length){
+      const ids=dbQuotes.map(q=>q.id);
+      const {data:itemRows,error:itemErr}=await sb.from('quotation_items').select('*').in('quotation_id',ids).order('created_at',{ascending:true});
+      if(itemErr) throw itemErr;
+      dbQuotes=dbQuotes.map(q=>({...q,quotation_items:(itemRows||[]).filter(i=>i.quotation_id===q.id)}));
+    }
+    const body=dbQuotes.length?dbQuotes.map(q=>`<tr><td><b>${safe(q.quotation_number)}</b></td><td>${safe(q.request_number||'-')}</td><td>${Number(q.total_amount||0).toLocaleString()} ${safe(q.currency||'EGP')}</td><td>${safe(q.lead_time_days||'-')} days</td><td>${badge(q.status||'Draft')}</td><td>${isoDate(q.created_at)}</td><td><button class="mini primary" onclick="customerOpenQuotation('${q.id}')">View Quotation</button></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty-state">No quotations have been issued for your company yet.</div></td></tr>`;
+    content.innerHTML=`<div class="head"><div><h2>${T('quotes')}</h2><p>All quotations issued to ${customerCompany()}</p></div><div style="display:flex;gap:8px;align-items:center"><span class="connection-pill">● Supabase Live</span><button class="mini light" onclick="quotesPage()">↻ Refresh</button></div></div><div class="card"><div class="table"><table><thead><tr><th>Quotation</th><th>Request</th><th>Total</th><th>Lead Time</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+  }catch(e){
+    content.innerHTML=`<div class="head"><div><h2>${T('quotes')}</h2><p>Unable to load the latest quotations.</p></div></div><div class="card"><div class="empty-state"><b>${esc(e.message||'Unable to retrieve quotations.')}</b><br><br><button class="mini primary" onclick="quotesPage()">Try Again</button></div></div>`;
+  }
+}
+function customerOpenQuotation(id){
+ const q=dbQuotes.find(x=>x.id===id);if(!q)return;
+ const items=q.quotation_items||[];
+ modal.innerHTML=`<div class="modalbox"><div class="head"><div><h2>${esc(q.quotation_number||'Quotation')}</h2><p>Request ${esc(q.request_number||'-')} · Issued ${isoDate(q.created_at)}</p></div><button class="iconbtn" onclick="closeModal()">✕</button></div><div class="quote-status-note"><b>Status:</b> ${badge(q.status||'Sent')} &nbsp; <b>Valid until:</b> ${esc(q.valid_until||'-')} &nbsp; <b>Lead time:</b> ${esc(q.lead_time_days||'-')} days</div><div class="table"><table><thead><tr><th>Description</th><th>Quantity</th><th>Unit Price</th><th>Total</th></tr></thead><tbody>${items.map(i=>`<tr><td>${esc(i.description)}</td><td>${Number(i.quantity||0).toLocaleString()}</td><td>${Number(i.unit_price||0).toLocaleString()} ${esc(q.currency||'EGP')}</td><td>${Number(i.total_price||0).toLocaleString()} ${esc(q.currency||'EGP')}</td></tr>`).join('')||'<tr><td colspan="4">No quotation items.</td></tr>'}</tbody></table></div><div class="quote-total-box"><div class="quote-total-row"><span>Subtotal</span><b>${Number(q.subtotal||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div><div class="quote-total-row"><span>Tax</span><b>${Number(q.tax_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div><div class="quote-total-row grand"><span>Total</span><b>${Number(q.total_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}</b></div></div>${q.customer_notes?`<div class="card" style="margin-top:12px"><b>Commercial Notes</b><p>${esc(q.customer_notes)}</p></div>`:''}<div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Close</button></div></div>`;
+ modal.classList.remove('hide');
 }
 
 function analyticsPage(){
@@ -909,7 +930,20 @@ submitOrder=async function(){
 const _v10OrderNext=orderNext;
 orderNext=function(){const before=orderWizardStep;_v10OrderNext();if(orderWizardStep===before+1&&before<4){const labels=['Project details saved','Files uploaded successfully','Part specifications saved'];showLiveToast('Step completed',labels[before-1]||'Information saved successfully.')}}
 
-requestsPage=function(){
+async function refreshCustomerLiveData(){
+ if(!sb||!dbCompany||isInternalRole())return false;
+ const [{data:requests,error:rErr},{data:quotes,error:qErr},{data:history,error:hErr}]=await Promise.all([
+  sb.from('manufacturing_requests').select('*, request_parts(*)').eq('company_id',dbCompany.id).order('created_at',{ascending:false}),
+  sb.from('quotations').select('*').eq('company_id',dbCompany.id).order('created_at',{ascending:false}),
+  sb.from('request_status_history').select('*').eq('company_id',dbCompany.id).order('created_at',{ascending:true})
+ ]);
+ if(rErr)throw rErr;if(qErr)throw qErr;if(hErr)throw hErr;
+ req=(requests||[]).map(r=>({id:r.request_number,uuid:r.id,customer:dbCompany.company_name,part:r.project_name,qty:(r.request_parts||[]).reduce((sum,p)=>sum+Number(p.quantity||0),0),status:r.status,date:isoDate(r.created_at),material:(r.request_parts||[]).length===1?r.request_parts[0].material:'Multiple Materials',description:r.description,orderType:r.order_type,target:r.required_delivery_date,address:r.delivery_address,reference:r.internal_reference,parts:(r.request_parts||[]).map(p=>({id:p.id,name:p.original_file_name||p.part_name,partName:p.part_name,material:p.material,thickness:p.thickness,qty:p.quantity,finish:p.finish,tolerance:p.tolerance,revision:p.revision,notes:p.notes})),files:[],audit:[]}));
+ dbQuotes=quotes||[];window.v10RequestHistory=history||[];return true;
+}
+requestsPage=async function(){
+ content.innerHTML=`<div class="head"><div><h2>${T('requests')}</h2><p>Loading the latest verified workflow updates…</p></div><span class="connection-pill">● Syncing</span></div><div class="card"><div class="empty-state">Checking Supabase…</div></div>`;
+ try{await refreshCustomerLiveData()}catch(e){console.error(e);showLiveToast('Live update failed',e.message||'Unable to refresh requests.');}
  const d=customerRequests();
  const cards=d.map(r=>{const info=customerStatusInfo(r.status),hist=requestHistoryFor(r.uuid),last=hist.length?new Date(hist[hist.length-1].created_at).toLocaleString():r.date;return `<article class="request-track-card"><div class="request-track-head"><div><div class="request-track-meta">${esc(r.id)} · ${esc(r.orderType||'Manufacturing Request')}</div><h3>${esc(r.part)}</h3><div class="request-track-meta">Required delivery: ${esc(r.target||'-')} · Total quantity: ${Number(r.qty||0).toLocaleString()}</div></div>${badge(r.status)}</div><div class="customer-status-message ${info.cls}">${esc(info.text)}</div>${compactTimeline(r.status)}<div class="request-actions-row"><span class="last-update">Last update: ${esc(last)}</span><button class="btn secondary" onclick="viewReq('${r.id}')">View Full Details</button></div></article>`}).join('')||'<div class="empty-state">No manufacturing requests have been submitted yet.</div>';
  content.innerHTML=`<div class="head"><div><h2>${T('requests')}</h2><p>Live progress and verified updates for every request.</p></div><button class="btn primary" onclick="newReq()">+ ${T('newRequest')}</button></div><div>${cards}</div>`;
@@ -936,13 +970,16 @@ let v10Polling=false,v10LastStatuses={};
 async function pollCustomerStatuses(){
  if(v10Polling||!authUser||isInternalRole()||app.classList.contains('hide'))return;v10Polling=true;
  try{
-  const before=Object.fromEntries(req.map(r=>[r.uuid,r.status]));await loadPortalData();
-  const changed=req.filter(r=>before[r.uuid]&&before[r.uuid]!==r.status);
+  const beforeStatus=Object.fromEntries(req.map(r=>[r.uuid,r.status])),beforeQuotes=new Set((dbQuotes||[]).map(q=>q.id));
+  await refreshCustomerLiveData();
+  const changed=req.filter(r=>beforeStatus[r.uuid]&&beforeStatus[r.uuid]!==r.status);
+  const newQuotes=(dbQuotes||[]).filter(q=>!beforeQuotes.has(q.id));
   changed.forEach(r=>showLiveToast('Request status updated',`${r.id}: ${customerStatusInfo(r.status).text}`));
-  if(changed.length){if(current==='requests')requestsPage();else if(current==='dashboard')dash()}
- }catch(e){console.warn(e)}finally{v10Polling=false}
+  newQuotes.forEach(q=>showLiveToast('New quotation received',`${q.quotation_number||'Quotation'} is ready for review.`));
+  if(changed.length||newQuotes.length){if(current==='requests')await requestsPage();else if(current==='quotes')await quotesPage();else if(current==='dashboard')dash()}
+ }catch(e){console.warn('Live polling:',e)}finally{v10Polling=false}
 }
-setInterval(pollCustomerStatuses,12000);
+setInterval(pollCustomerStatuses,8000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pollCustomerStatuses()});
 </script>
 
@@ -1020,9 +1057,10 @@ async function saveOwnerQuotation(requestId){
   const {data:q,error:qErr}=await sb.from('quotations').insert(payload).select().single();if(qErr)throw qErr;
   const rows=items.map(x=>({company_id:r.company_id,quotation_id:q.id,part_id:x.part_id||null,description:x.description,quantity:x.quantity,unit_price:x.unit_price}));
   const {error:iErr}=await sb.from('quotation_items').insert(rows);if(iErr)throw iErr;
-  const old=r.status;const {error:rErr}=await sb.from('manufacturing_requests').update({status:'Quotation Sent'}).eq('id',r.id);if(rErr)throw rErr;
-  await sb.from('request_status_history').insert({company_id:r.company_id,request_id:r.id,from_status:old,to_status:'Quotation Sent',changed_by:authUser.id,comment:`Quotation ${q.quotation_number} was created and published to the customer.`});
-  closeModal();await loadPortalData();showLiveToast('Quotation published',`${q.quotation_number} is now visible to the customer.`);engineerRequestsPage();
+  const old=r.status;const {data:updatedRequest,error:rErr}=await sb.from('manufacturing_requests').update({status:'Quotation Sent'}).eq('id',r.id).select('id,status').single();if(rErr)throw rErr;
+  const {error:hErr}=await sb.from('request_status_history').insert({company_id:r.company_id,request_id:r.id,from_status:old,to_status:'Quotation Sent',changed_by:authUser.id,comment:`Quotation ${q.quotation_number} was created and published to the customer.`});if(hErr)throw hErr;
+  const {data:verified,error:vErr}=await sb.from('quotations').select('id,quotation_number,status,total_amount').eq('id',q.id).single();if(vErr||!verified)throw(vErr||new Error('Quotation could not be verified after publishing.'));
+  closeModal();await loadPortalData();showLiveToast('Quotation published',`${verified.quotation_number} is live in the customer portal.`);alert(`Success: ${verified.quotation_number} was published and the request status is now ${updatedRequest.status}.`);engineerRequestsPage();
  }catch(e){alert(e.message||'Unable to create quotation.')}finally{setBusy(false)}
 }
 engineerRequestsPage=function(){
