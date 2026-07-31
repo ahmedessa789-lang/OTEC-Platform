@@ -980,8 +980,7 @@ function ownerCreateQuotation(requestId){
  const r=engineerRequests.find(x=>x.id===requestId);if(!r)return;
  const c=reqCompany(r),existing=quoteForRequest(requestId),parts=r.request_parts||[];
  if(existing&&!confirm(`A quotation (${existing.quotation_number}) already exists for this request. Create another revision?`))return;
- modal.classList.remove('hide');
- modalBox.innerHTML=`<div class="head"><div><h2>Create Quotation</h2><p>${esc(r.request_number)} · ${esc(c?.company_name||'Customer')} · ${esc(r.project_name)}</p></div><button class="iconbtn" onclick="closeModal()">✕</button></div>
+ modal.innerHTML=`<div class="modalbox"><div class="head"><div><h2>Create Quotation</h2><p>${esc(r.request_number)} · ${esc(c?.company_name||'Customer')} · ${esc(r.project_name)}</p></div><button class="iconbtn" onclick="closeModal()">✕</button></div>
  <div class="quote-status-note"><b>Technical request approved:</b> Enter commercial pricing, delivery lead time and validity. Saving will immediately publish the quotation to the customer's portal.</div>
  <div class="quote-modal-grid">
   <label>Currency<select id="quoteCurrency"><option>EGP</option><option>USD</option><option>EUR</option></select></label>
@@ -994,7 +993,8 @@ function ownerCreateQuotation(requestId){
  <button class="mini light" style="margin-top:10px" onclick="addOwnerQuoteItem()">+ Add Item</button>
  <label style="display:block;margin-top:14px">Commercial Notes<textarea id="quoteNotes" rows="3" placeholder="Payment terms, exclusions, delivery notes or other commercial conditions"></textarea></label>
  <div class="quote-total-box"><div class="quote-total-row"><span>Subtotal</span><b id="quoteSubtotal">0.00</b></div><div class="quote-total-row"><span>Tax</span><b id="quoteTax">0.00</b></div><div class="quote-total-row grand"><span>Total</span><b id="quoteGrand">0.00 EGP</b></div></div>
- <div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveOwnerQuotation('${requestId}')">Publish Quotation</button></div>`;
+ <div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveOwnerQuotation('${requestId}')">Publish Quotation</button></div></div>`;
+ modal.classList.remove('hide');
  recalcOwnerQuote();
 }
 function addOwnerQuoteItem(){
