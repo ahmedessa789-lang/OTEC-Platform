@@ -946,5 +946,90 @@ setInterval(pollCustomerStatuses,12000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pollCustomerStatuses()});
 </script>
 
+
+<style>
+.quote-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.quote-items{display:grid;gap:10px}.quote-item{display:grid;grid-template-columns:minmax(180px,1.7fr) 110px 140px 140px;gap:10px;align-items:end;border:1px solid #dce6ee;border-radius:14px;padding:12px;background:#f8fbfd}.quote-total-box{margin-top:14px;margin-left:auto;max-width:430px;border:1px solid #d8e5ed;border-radius:15px;padding:14px;background:#f7fafc}.quote-total-row{display:flex;justify-content:space-between;gap:18px;padding:7px 0}.quote-total-row.grand{border-top:1px solid #cfdce5;margin-top:5px;padding-top:12px;font-size:19px}.request-action-stack{display:flex;gap:6px;flex-wrap:wrap}.approval-panel{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #e3ebf0}.quote-status-note{padding:12px;border-radius:12px;background:#eef7ff;border:1px solid #cfe2f3;color:#164f7e;margin-bottom:12px}@media(max-width:760px){.quote-modal-grid{grid-template-columns:1fr}.quote-item{grid-template-columns:1fr 1fr}.quote-item .quote-description{grid-column:1/-1}.request-action-stack .mini{flex:1 1 145px}.quote-total-box{max-width:none;margin-left:0}}
+</style>
+<script>
+/* OTEC V11 — Owner Request Approval & Quotation Workflow */
+function ownerCanManage(){return isInternalRole()}
+function reqCompany(r){return engineerCompanies.find(c=>c.id===r.company_id)}
+function quoteForRequest(requestId){return engineerQuotes.find(q=>q.request_id===requestId)}
+async function ownerSetRequestStatus(requestId,newStatus,comment){
+ const r=engineerRequests.find(x=>x.id===requestId);if(!r)return;
+ const old=r.status;
+ try{
+  setBusy(true,'Updating request workflow…');
+  const {error}=await sb.from('manufacturing_requests').update({status:newStatus}).eq('id',requestId);if(error)throw error;
+  const {error:hErr}=await sb.from('request_status_history').insert({company_id:r.company_id,request_id:r.id,from_status:old,to_status:newStatus,changed_by:authUser.id,comment:comment||`Request status changed to ${newStatus}.`});if(hErr)throw hErr;
+  r.status=newStatus;showLiveToast('Request updated',`${r.request_number}: ${newStatus}`);await loadPortalData();engineerRequestsPage();
+ }catch(e){alert(e.message||'Unable to update request.')}finally{setBusy(false)}
+}
+function ownerApproveRequest(requestId){
+ const r=engineerRequests.find(x=>x.id===requestId);if(!r)return;
+ if(!confirm(`Approve ${r.request_number} for quotation preparation?`))return;
+ ownerSetRequestStatus(requestId,'Approved for Quotation','OTEC owner approved the technical request for commercial quotation preparation.');
+}
+function ownerRejectRequest(requestId){
+ const r=engineerRequests.find(x=>x.id===requestId);if(!r)return;
+ const reason=prompt('Enter the rejection or revision reason for the customer:');if(reason===null)return;
+ ownerSetRequestStatus(requestId,'Revision Requested',reason||'OTEC requested technical revisions before quotation.');
+}
+function quotationNumberPreview(){return 'Generated automatically after saving'}
+function ownerCreateQuotation(requestId){
+ const r=engineerRequests.find(x=>x.id===requestId);if(!r)return;
+ const c=reqCompany(r),existing=quoteForRequest(requestId),parts=r.request_parts||[];
+ if(existing&&!confirm(`A quotation (${existing.quotation_number}) already exists for this request. Create another revision?`))return;
+ modal.classList.remove('hide');
+ modalBox.innerHTML=`<div class="head"><div><h2>Create Quotation</h2><p>${esc(r.request_number)} · ${esc(c?.company_name||'Customer')} · ${esc(r.project_name)}</p></div><button class="iconbtn" onclick="closeModal()">✕</button></div>
+ <div class="quote-status-note"><b>Technical request approved:</b> Enter commercial pricing, delivery lead time and validity. Saving will immediately publish the quotation to the customer's portal.</div>
+ <div class="quote-modal-grid">
+  <label>Currency<select id="quoteCurrency"><option>EGP</option><option>USD</option><option>EUR</option></select></label>
+  <label>Lead Time (days)<input id="quoteLead" type="number" min="1" value="14"></label>
+  <label>Valid Until<input id="quoteValid" type="date" value="${new Date(Date.now()+14*86400000).toISOString().slice(0,10)}"></label>
+  <label>Tax %<input id="quoteTaxRate" type="number" min="0" step="0.01" value="14" oninput="recalcOwnerQuote()"></label>
+ </div>
+ <h3 style="margin-top:18px">Quotation Items</h3>
+ <div class="quote-items" id="ownerQuoteItems">${parts.map((p,i)=>`<div class="quote-item" data-part="${p.id||''}"><label class="quote-description">Description<input class="qi-desc" value="${esc(p.part_name||`Part ${i+1}`)}"></label><label>Quantity<input class="qi-qty" type="number" min="0" step="0.001" value="${Number(p.quantity||1)}" oninput="recalcOwnerQuote()"></label><label>Unit Price<input class="qi-price" type="number" min="0" step="0.01" value="0" oninput="recalcOwnerQuote()"></label><label>Line Total<input class="qi-total" value="0.00" readonly></label></div>`).join('')||`<div class="quote-item"><label class="quote-description">Description<input class="qi-desc" value="Manufacturing service"></label><label>Quantity<input class="qi-qty" type="number" min="0" step="0.001" value="1" oninput="recalcOwnerQuote()"></label><label>Unit Price<input class="qi-price" type="number" min="0" step="0.01" value="0" oninput="recalcOwnerQuote()"></label><label>Line Total<input class="qi-total" value="0.00" readonly></label></div>`}</div>
+ <button class="mini light" style="margin-top:10px" onclick="addOwnerQuoteItem()">+ Add Item</button>
+ <label style="display:block;margin-top:14px">Commercial Notes<textarea id="quoteNotes" rows="3" placeholder="Payment terms, exclusions, delivery notes or other commercial conditions"></textarea></label>
+ <div class="quote-total-box"><div class="quote-total-row"><span>Subtotal</span><b id="quoteSubtotal">0.00</b></div><div class="quote-total-row"><span>Tax</span><b id="quoteTax">0.00</b></div><div class="quote-total-row grand"><span>Total</span><b id="quoteGrand">0.00 EGP</b></div></div>
+ <div class="modal-actions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="saveOwnerQuotation('${requestId}')">Publish Quotation</button></div>`;
+ recalcOwnerQuote();
+}
+function addOwnerQuoteItem(){
+ const box=document.getElementById('ownerQuoteItems');if(!box)return;
+ box.insertAdjacentHTML('beforeend',`<div class="quote-item"><label class="quote-description">Description<input class="qi-desc" value="Additional service"></label><label>Quantity<input class="qi-qty" type="number" min="0" step="0.001" value="1" oninput="recalcOwnerQuote()"></label><label>Unit Price<input class="qi-price" type="number" min="0" step="0.01" value="0" oninput="recalcOwnerQuote()"></label><label>Line Total<input class="qi-total" value="0.00" readonly></label></div>`);recalcOwnerQuote();
+}
+function recalcOwnerQuote(){
+ let subtotal=0;document.querySelectorAll('#ownerQuoteItems .quote-item').forEach(row=>{const q=Number(row.querySelector('.qi-qty')?.value||0),p=Number(row.querySelector('.qi-price')?.value||0),t=q*p;subtotal+=t;const o=row.querySelector('.qi-total');if(o)o.value=t.toFixed(2)});
+ const rate=Number(document.getElementById('quoteTaxRate')?.value||0),tax=subtotal*rate/100,total=subtotal+tax,cur=document.getElementById('quoteCurrency')?.value||'EGP';
+ if(document.getElementById('quoteSubtotal'))quoteSubtotal.textContent=subtotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+ if(document.getElementById('quoteTax'))quoteTax.textContent=tax.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+ if(document.getElementById('quoteGrand'))quoteGrand.textContent=`${total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} ${cur}`;
+ return {subtotal,tax,total};
+}
+async function saveOwnerQuotation(requestId){
+ const r=engineerRequests.find(x=>x.id===requestId);if(!r)return;
+ const items=[...document.querySelectorAll('#ownerQuoteItems .quote-item')].map(row=>({part_id:row.dataset.part||null,description:row.querySelector('.qi-desc').value.trim(),quantity:Number(row.querySelector('.qi-qty').value||0),unit_price:Number(row.querySelector('.qi-price').value||0)})).filter(x=>x.description&&x.quantity>0);
+ if(!items.length){alert('Add at least one valid quotation item.');return}if(items.some(x=>x.unit_price<=0)){alert('Enter the unit price for every quotation item.');return}
+ const totals=recalcOwnerQuote();
+ try{
+  setBusy(true,'Publishing quotation to the customer…');
+  const payload={company_id:r.company_id,request_id:r.id,request_number:r.request_number,subtotal:totals.subtotal,tax_amount:totals.tax,total_amount:totals.total,currency:quoteCurrency.value,lead_time_days:Number(quoteLead.value||0)||null,valid_until:quoteValid.value||null,status:'Sent',customer_notes:quoteNotes.value.trim()||null};
+  const {data:q,error:qErr}=await sb.from('quotations').insert(payload).select().single();if(qErr)throw qErr;
+  const rows=items.map(x=>({company_id:r.company_id,quotation_id:q.id,part_id:x.part_id||null,description:x.description,quantity:x.quantity,unit_price:x.unit_price}));
+  const {error:iErr}=await sb.from('quotation_items').insert(rows);if(iErr)throw iErr;
+  const old=r.status;const {error:rErr}=await sb.from('manufacturing_requests').update({status:'Quotation Sent'}).eq('id',r.id);if(rErr)throw rErr;
+  await sb.from('request_status_history').insert({company_id:r.company_id,request_id:r.id,from_status:old,to_status:'Quotation Sent',changed_by:authUser.id,comment:`Quotation ${q.quotation_number} was created and published to the customer.`});
+  closeModal();await loadPortalData();showLiveToast('Quotation published',`${q.quotation_number} is now visible to the customer.`);engineerRequestsPage();
+ }catch(e){alert(e.message||'Unable to create quotation.')}finally{setBusy(false)}
+}
+engineerRequestsPage=function(){
+ const rows=engineerRequests.map(r=>{const c=reqCompany(r),q=quoteForRequest(r.id);return `<tr><td><b>${esc(r.request_number)}</b></td><td>${esc(c?.company_name||'-')}</td><td>${esc(r.project_name)}</td><td>${esc(r.order_type)}</td><td>${(r.request_parts||[]).length}</td><td>${badge(r.status)}</td><td>${q?`${esc(q.quotation_number)}<br>${Number(q.total_amount||0).toLocaleString()} ${esc(q.currency||'EGP')}`:'Not created'}</td><td><div class="request-action-stack"><button class="mini light" onclick="engineerOpenRequest('${r.id}')">Open</button><button class="mini success" onclick="ownerApproveRequest('${r.id}')">Approve</button><button class="mini primary" onclick="ownerCreateQuotation('${r.id}')">${q?'New Quote Revision':'Create Quotation'}</button><button class="mini danger" onclick="ownerRejectRequest('${r.id}')">Request Revision</button></div></td></tr>`}).join('')||'<tr><td colspan="8"><div class="empty-state">No requests yet.</div></td></tr>';
+ content.innerHTML=`<div class="head"><div><h2>Request Approval & Quotations</h2><p>Review customer files, approve technical requests and publish commercial quotations.</p></div><span class="connection-pill">● Supabase Live</span></div><div class="card"><div class="table"><table><thead><tr><th>Request</th><th>Company</th><th>Project</th><th>Type</th><th>Parts</th><th>Status</th><th>Quotation</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+</script>
+
 </body>
 </html>
